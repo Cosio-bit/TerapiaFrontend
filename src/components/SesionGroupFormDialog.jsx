@@ -15,7 +15,6 @@ import {
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { getAllProfesionales } from "../api/profesionalApi";
-import { getAllTerapias } from "../api/terapiaApi";
 
 const SesionGroupFormDialog = ({ 
   open, 
@@ -51,18 +50,36 @@ const SesionGroupFormDialog = ({
       });
   }, []);
 
-  useEffect(() => {
-    console.log("Dialog open:", open, "Editing session group:", sesionGroup);
-    if (open && sesionGroup) {
-      setFormSesionGroup({
-        terapia: sesionGroup.terapia?.id_terapia || "",
-        cliente: sesionGroup.cliente?.id_cliente || "",
-        variante: sesionGroup.variante?.id_variante || "",
-        descripcion: sesionGroup.descripcion || "",
-        sesiones: sesionGroup.sesiones || [],
-      });
+  const handleOpenDialog = () => {
+    if (sesionGroup?.id_sesion_group) {
+      console.log("✅ Opening dialog with sesionGroup:", sesionGroup);
+  
+      const terapiaId = terapias.find(t => t.nombre === sesionGroup.terapia)?.id_terapia || "";
+      const clienteId = clientes.find(c => c.usuario.nombre === sesionGroup.cliente)?.id_cliente || "";
+      const varianteId = variantes.find(v => v.nombre === sesionGroup.variante)?.id_variante || "";
+  
+      console.log("🔍 Before setting state, original descripción:", sesionGroup.descripcion);
+  
+      const updatedState = {
+        terapia: terapiaId,
+        cliente: clienteId,
+        variante: varianteId,
+        descripcion: sesionGroup.descripcion !== undefined ? sesionGroup.descripcion : "⚠️ Sin descripción",
+        sesiones: sesionGroup.sesiones ? [...sesionGroup.sesiones] : [],
+      };
+  
+      console.log("🛠️ After processing, updatedState.descripcion:", updatedState.descripcion);
+  
+      setFormSesionGroup(updatedState);
     }
-  }, [open, sesionGroup]);
+  };
+  
+
+  useEffect(() => {
+    if (open) {
+      handleOpenDialog();
+    }
+  }, [open]);
 
   const handleSave = async () => {
     console.log("Saving session group:", formSesionGroup);
@@ -120,6 +137,10 @@ const SesionGroupFormDialog = ({
     setFormSesionGroup({ ...formSesionGroup, sesiones: updatedSesiones });
   };
 
+  useEffect(() => {
+    console.log("📌 Form state right before rendering:", formSesionGroup);
+  }, [formSesionGroup]);
+  
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>{editing ? "Editar Grupo de Sesiones" : "Crear Grupo de Sesiones"}</DialogTitle>
@@ -128,7 +149,7 @@ const SesionGroupFormDialog = ({
         <FormControl fullWidth margin="dense">
           <InputLabel>Terapia</InputLabel>
           <Select
-            value={formSesionGroup.terapia}
+            value={formSesionGroup.terapia || ""}
             onChange={(e) => setFormSesionGroup({ ...formSesionGroup, terapia: e.target.value })}
           >
             {terapias.map((terapia) => (
@@ -171,43 +192,29 @@ const SesionGroupFormDialog = ({
 
         {/* Descripción */}
         <TextField
-          margin="dense"
-          label="Descripción"
-          fullWidth
-          multiline
-          value={formSesionGroup.descripcion}
-          onChange={(e) => setFormSesionGroup({ ...formSesionGroup, descripcion: e.target.value })}
-        />
+  margin="dense"
+  label="Descripción"
+  fullWidth
+  multiline
+  value={formSesionGroup.descripcion}
+  onChange={(e) => {
+    console.log("🔍 Updating descripción:", e.target.value); // <-- Debugging log
+    setFormSesionGroup({ ...formSesionGroup, descripcion: e.target.value });
+  }}
+/>
+
 
         {/* Sesiones Management */}
         <div>
           <h4>Sesiones</h4>
           {formSesionGroup.sesiones.map((sesion, index) => (
             <div key={index} style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
-              <TextField
-                label="Fecha y Hora"
-                type="datetime-local"
-                value={sesion.fecha_hora}
-                onChange={(e) => handleSesionChange(index, "fecha_hora", e.target.value)}
-              />
-              <TextField
-                label="Precio"
-                type="number"
-                value={sesion.precio}
-                onChange={(e) => handleSesionChange(index, "precio", e.target.value)}
-              />
-              <TextField
-                label="Estado"
-                value={sesion.estado}
-                onChange={(e) => handleSesionChange(index, "estado", e.target.value)}
-              />
-              {/* Profesional Selection */}
+              <TextField label="Fecha y Hora" type="datetime-local" value={sesion.fecha_hora} onChange={(e) => handleSesionChange(index, "fecha_hora", e.target.value)} />
+              <TextField label="Precio" type="number" value={sesion.precio} onChange={(e) => handleSesionChange(index, "precio", e.target.value)} />
+              <TextField label="Estado" value={sesion.estado} onChange={(e) => handleSesionChange(index, "estado", e.target.value)} />
               <FormControl fullWidth>
                 <InputLabel>Profesional</InputLabel>
-                <Select
-                  value={sesion.profesional || ""}
-                  onChange={(e) => handleSesionChange(index, "profesional", e.target.value)}
-                >
+                <Select value={sesion.profesional || ""} onChange={(e) => handleSesionChange(index, "profesional", e.target.value)}>
                   {profesionales.map((profesional) => (
                     <MenuItem key={profesional.id_profesional} value={profesional.id_profesional}>
                       {profesional.usuario.nombre}

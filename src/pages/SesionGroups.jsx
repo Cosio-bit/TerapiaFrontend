@@ -32,12 +32,21 @@ const SesionGroups = () => {
   const fetchSesionGroupsData = async () => {
     try {
       const data = await fetchSesionGroups();
-      setSesionGroups(Array.isArray(data) ? data : []);
+      
+      console.log("📤 API Response for SesionGroups:", JSON.stringify(data, null, 2)); // ✅ Debug API response
+      
+      if (Array.isArray(data)) {
+        setSesionGroups(data);
+      } else {
+        console.error("❌ API returned unexpected data structure:", data);
+        setSesionGroups([]);
+      }
     } catch (error) {
       console.error("❌ Error fetching session groups:", error);
       setSnackbar({ open: true, message: "Error al cargar los grupos de sesiones.", severity: "error" });
     }
   };
+  
 
   const fetchTerapiasData = async () => {
     try {
@@ -105,30 +114,38 @@ const SesionGroups = () => {
         setSnackbar({ open: true, message: "Error al guardar el grupo de sesiones.", severity: "error" });
     }
 };
-const handleEditSesionGroup = (sesionGroup) => {
-  console.log("✏️ Editing SesionGroup:", sesionGroup);
 
-  if (!sesionGroup.id) {
-      console.error("⚠️ Error: No se encontró el ID de SesionGroup.");
-      return;
+const handleEditSesionGroup = (sesionGroup) => {
+  console.log("✏️ Editing SesionGroup:", JSON.stringify(sesionGroup, null, 2));
+
+  if (!sesionGroup.id && !sesionGroup.id_sesion_group) {
+    console.error("⚠️ Error: No se encontró el ID de SesionGroup.");
+    return;
   }
 
-  setEditing(true);
-  setCurrentSesionGroup({
-      id_sesion_group: sesionGroup.id, 
-      terapia: sesionGroup.terapia?.id_terapia || "", // ✅ Asegurar que solo se guarda el ID
-      cliente: sesionGroup.cliente?.id_cliente || "", // ✅ Asegurar que solo se guarda el ID
-      variante: sesionGroup.variante?.id_variante || "", // ✅ Asegurar que solo se guarda el ID
-      descripcion: sesionGroup.descripcion || "", // ✅ Mantener la descripción
-      sesiones: sesionGroup.sesiones?.map(sesion => ({
-          ...sesion,
-          profesional: sesion.profesional?.id_profesional || "" // ✅ Asegurar que se guarde solo el ID
-      })) || [],
-  });
+  // ✅ Preserve `descripcion` properly
+  const updatedSesionGroup = {
+    id_sesion_group: sesionGroup.id_sesion_group || sesionGroup.id,
+    terapia: sesionGroup.terapia?.id_terapia || sesionGroup.terapia || "", 
+    cliente: sesionGroup.cliente?.id_cliente || sesionGroup.cliente || "",
+    variante: sesionGroup.variante?.id_variante || sesionGroup.variante || "",
+    descripcion: sesionGroup.descripcion ? sesionGroup.descripcion : "",  // 🔥 FIX HERE
+    sesiones: sesionGroup.sesiones?.map(sesion => ({
+      ...sesion,
+      profesional: sesion.profesional?.id_profesional || sesion.profesional || ""
+    })) || [],
+  };
 
-  console.log("📝 Formulario cargado con datos:", JSON.stringify(sesionGroup, null, 2)); // ✅ Debugging
-  setOpenDialog(true);
+  console.log("📝 Formulario cargado con datos (AFTER FIX):", JSON.stringify(updatedSesionGroup, null, 2));
+
+  setCurrentSesionGroup(updatedSesionGroup);
+  setEditing(true);
+
+  // ✅ Ensure state updates before opening the form
+  setTimeout(() => setOpenDialog(true), 100);
 };
+
+
 
 
 
