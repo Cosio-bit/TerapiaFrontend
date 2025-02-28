@@ -1,18 +1,13 @@
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  /* Remove or comment out the background-color */
-  /* background-color: #242424; */
+  font-family: 'Montserrat', system-ui, Avenir, Helvetica, Arial, sans-serif; /* Cambiar a Montserrat */
+  line-height: 1.8; /* Incrementar la altura de línea */
+  font-weight: 400; /* Mantener el peso regular */
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
-
 
 body {
   margin: 0;
@@ -21,6 +16,7 @@ body {
   min-width: 320px;
   min-height: 100vh;
 
-  /* Remove or comment out the background-color */
-  /* background-color: #242424; */
+  font-size: 1.2rem; /* Aumentar el tamaño de la fuente base */
+  line-height: 1.8; /* Mejorar la legibilidad */
+  font-family: 'Montserrat', sans-serif; /* Usar Montserrat */
 }

@@ -1,6 +1,5 @@
 import { createTheme } from '@mui/material/styles';
 
-
 const createCustomTheme = (backgroundImage) => {
   const link = document.createElement('link');
   link.href = 'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap';
@@ -25,10 +24,11 @@ const createCustomTheme = (backgroundImage) => {
       },
     },
     typography: {
-      fontFamily: '"Lora", "Open Sans", serif',
-      h1: { fontSize: '2.5rem', fontWeight: 700, color: '#333' },
-      h2: { fontSize: '2rem', fontWeight: 600, color: '#444' },
-      body1: { fontSize: '1rem', lineHeight: 1.6, color: '#555' },
+      fontFamily: '"Montserrat", sans-serif',
+      h1: { fontSize: '5rem', fontWeight: 700, color: '#333' }, // Quadrupled size
+      h2: { fontSize: '5rem', fontWeight: 600, color: '#444' }, // Quadrupled size
+      body1: { fontSize: '1.2rem', lineHeight: 1.6, color: '#555' }, // Quadrupled size
+      button: { fontSize: '1.3rem', fontWeight: 500 }, // Increased font size for buttons
     },
     components: {
       MuiCssBaseline: {
@@ -36,7 +36,7 @@ const createCustomTheme = (backgroundImage) => {
           body: {
             margin: 0,
             padding: 0,
-            fontFamily: '"Lora", "Open Sans", serif',
+            fontFamily: '"Montserrat", sans-serif',
             backgroundImage: `url(${backgroundImage})`,
             backgroundAttachment: 'fixed',
             backgroundSize: 'cover',
@@ -52,10 +52,18 @@ const createCustomTheme = (backgroundImage) => {
             backgroundColor: 'rgba(255, 255, 255, 0.8)', // Transparent white overlay
             zIndex: 1, // Ensures it's between the background and content
           },
+          '.MuiButton-root': {
+            fontSize: '3rem', // Increased font size for all buttons
+          },
+          '.MuiTypography-h6': {
+            fontSize: '4rem', // Increased font size for navbar title
+            fontWeight: 700,
+            fontFamily: '"Montserrat", sans-serif',
+          },
         },
       },
     },
-    });
-  };
+  });
+};
 
 export default createCustomTheme;

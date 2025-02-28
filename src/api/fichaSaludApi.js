@@ -1,25 +1,89 @@
 import axiosInstance from "./axiosConfig";
 
-export const getFichasSalud = async () => {
-    const response = await axiosInstance.get("/api/fichasalud");
+/**
+ * Fetch all health records
+ * @returns {Promise<Array>} List of health records
+ */
+export const getAllFichasSalud = async () => {
+  try {
+    const response = await axiosInstance.get("/api/fichas-salud");
     return response.data;
+  } catch (error) {
+    console.error("Error fetching health records:", error);
+    throw error;
+  }
 };
 
-export const getFichaSaludById = async (id) => {
-    const response = await axiosInstance.get(`/api/fichasalud/${id}`);
+/**
+ * Fetch a health record by ID
+ * @param {number} id - Health record ID
+ * @returns {Promise<Object>} Health record details
+ */
+export const fetchFichaSaludById = async (id) => {
+  try {
+    const response = await axiosInstance.get(`/api/fichas-salud/${id}`);
     return response.data;
+  } catch (error) {
+    console.error(`Error fetching health record with ID ${id}:`, error);
+    throw error;
+  }
 };
 
+/**
+ * Create a new health record
+ * @param {Object} fichaSalud - Health record data
+ * @returns {Promise<Object>} Created health record
+ */
 export const createFichaSalud = async (fichaSalud) => {
-    const response = await axiosInstance.post("/api/fichasalud", fichaSalud);
+  try {
+    const response = await axiosInstance.post("/api/fichas-salud", fichaSalud);
     return response.data;
+  } catch (error) {
+    console.error("Error creating health record:", error);
+    throw error;
+  }
 };
 
+/**
+ * Update an existing health record
+ * @param {number} id - Health record ID
+ * @param {Object} fichaSalud - Updated health record data
+ * @returns {Promise<Object>} Updated health record
+ */
 export const updateFichaSalud = async (id, fichaSalud) => {
-    const response = await axiosInstance.put(`/api/fichasalud/${id}`, fichaSalud);
+  try {
+    const response = await axiosInstance.put(`/api/fichas-salud/${id}`, fichaSalud);
     return response.data;
+  } catch (error) {
+    console.error(`Error updating health record with ID ${id}:`, error);
+    throw error;
+  }
 };
 
+/**
+ * Delete a health record by ID
+ * @param {number} id - Health record ID
+ */
 export const deleteFichaSalud = async (id) => {
-    await axiosInstance.delete(`/api/fichasalud/${id}`);
+  try {
+    await axiosInstance.delete(`/api/fichas-salud/${id}`);
+  } catch (error) {
+    console.error(`Error deleting health record with ID ${id}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Bulk import health records
+ * @param {Array} fichasSalud - List of health records to create
+ * @returns {Promise<Array>} List of created health records
+ */
+export const bulkCreateFichasSalud = async (fichasSalud) => {
+  try {
+    const response = await axiosInstance.post("/api/fichas-salud/importar", fichasSalud);
+    return response.data;
+  } catch (error) {
+    console.error("Error bulk creating health records:", error);
+    throw error;
+  }
 };

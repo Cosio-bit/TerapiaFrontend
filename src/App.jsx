@@ -8,21 +8,23 @@ import axios from "axios";
 
 // Importar todos los componentes
 import Usuarios from "./pages/Usuarios";
-import Arriendos from "./components/Arriendos";
-import Categorias from "./components/Categorias";
-import Clientes from "./components/Clientes";
-import Compras from "./components/Compras";
-import FichasSalud from "./components/FichasSalud";
-import ProductosComprados from "./components/ProductosComprados";
-import Productos from "./components/Productos";
-import Profesionales from "./components/Profesionales";
-import Salas from "./components/Salas";
-import Sesiones from "./components/Sesiones";
-import Terapias from "./components/Terapias";
-import UsuarioRoles from "./pages/UsuarioRoles";
-import Proveedores from "./components/Proveedores";
-import CrearSesiones from "./components/CrearSesiones";
-import LandingPage from "./components/LandingPage";
+import Arriendos from "./pages/Arriendos";
+import Categorias from "./pages/Categorias";
+import Clientes from "./pages/Clientes";
+import Compras from "./pages/Compras";
+import FichasSalud from "./pages/FichasSalud";
+import ProductosComprados from "./pages/ProductosComprados";
+import Productos from "./pages/Productos";
+import Profesionales from "./pages/Profesionales";
+import Salas from "./pages/Salas";
+import Sesiones from "./pages/Sesiones";
+import Terapias from "./pages/Terapias";
+//import UsuarioRoles from "./pages/UsuarioRoles";
+import Proveedores from "./pages/Proveedores";
+//import CrearSesiones from "./components/CrearSesiones";
+//import AgendarSesiones from "./pages/AgendarSesiones"; // Nuevo componente importado
+import LandingPage from "./pages/LandingPage";
+import SesionGroups from "./pages/SesionGroups";
 
 function App() {
   const [theme, setTheme] = useState(createCustomTheme(""));
@@ -61,7 +63,7 @@ function App() {
                     fontSize: "1.5rem",
                     color: "black",
                     cursor: "pointer",
-                    "&:hover": { color: "rgba(0, 123, 255, 0.9)" },
+                    "&:hover": { color: "rgba(246, 128, 32, 0.9)" },
                   }}
                 >
                   Centro Terapia
@@ -112,54 +114,57 @@ function App() {
               <Button component={Link} to="/proveedores" sx={linkStyle}>
                 Proveedores
               </Button>
+              <Button component={Link} to="/sesion-groups" sx={linkStyle}>
+                Grupos de Sesiones
+              </Button>
             </Box>
           </Toolbar>
         </AppBar>
 
-        {/* Main Content */}
         <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            minHeight: "100vh",
-            padding: "2rem",
-            background: theme.palette.background.default,
-          }}
-        >
-          <div
-            style={{
-              width: "100%",
-              maxWidth: "1200px",
-              padding: "20px",
-              background: "rgba(255, 255, 255, 0.8)",
-              borderRadius: "10px",
-              boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
-            }}
-          >
-            {/* Todas las rutas */}
-            <Routes>
-            
-            
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/usuarios" element={<Usuarios />} />
-              <Route path="/arriendos" element={<Arriendos />} />
-              <Route path="/categorias" element={<Categorias />} />
-              <Route path="/clientes" element={<Clientes />} />
-              <Route path="/compras" element={<Compras />} />
-              <Route path="/fichas-salud" element={<FichasSalud />} />
-              <Route path="/productos-comprados" element={<ProductosComprados />} />
-              <Route path="/productos" element={<Productos />} />
-              <Route path="/profesionales" element={<Profesionales />} />
-              <Route path="/salas" element={<Salas />} />
-              <Route path="/sesiones" element={<Sesiones />} />
-              <Route path="/terapias" element={<Terapias />} />
-              <Route path="/proveedores" element={<Proveedores />} />
-              <Route path="/usuario-roles" element={<UsuarioRoles />} />
-              <Route path="/crearSesiones/:clienteId" element={<CrearSesiones />} />
-            </Routes>
-          </div>
-        </div>
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center", // Vertically center the content
+    alignItems: "center", // Horizontally center the content
+    height: "100vh", // Use full viewport height
+    width: "100vw", // Use full viewport width
+    padding: "2rem",
+    background: "transparent", // Keep it transparent
+  }}
+>
+  <div
+    style={{
+      width: "100%",
+      maxWidth: "1200px", // Optional: Limit max width for better readability
+      padding: "20px",
+      background: "rgba(255, 255, 255, 0.8)", // Slight opacity for contrast
+      borderRadius: "10px",
+      boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+      flexGrow: 1, // Ensures the inner container expands to fill the space
+    }}
+  >
+    {/* Content and Routes */}
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/usuarios" element={<Usuarios />} />
+      <Route path="/arriendos" element={<Arriendos />} />
+      <Route path="/categorias" element={<Categorias />} />
+      <Route path="/clientes" element={<Clientes />} />
+      <Route path="/compras" element={<Compras />} />
+      <Route path="/fichas-salud" element={<FichasSalud />} />
+      <Route path="/productos-comprados" element={<ProductosComprados />} />
+      <Route path="/productos" element={<Productos />} />
+      <Route path="/profesionales" element={<Profesionales />} />
+      <Route path="/salas" element={<Salas />} />
+      <Route path="/sesiones" element={<Sesiones />} />
+      <Route path="/terapias" element={<Terapias />} />
+      <Route path="/proveedores" element={<Proveedores />} />
+      <Route path="/sesion-groups" element={<SesionGroups />} />
+    </Routes>
+  </div>
+</div>
+
       </Router>
     </ThemeProvider>
   );
@@ -175,7 +180,7 @@ const linkStyle = {
   position: "relative",
   transition: "color 0.3s ease",
   "&:hover": {
-    color: "rgba(0, 123, 255, 0.9)",
+    color: "rgba(255, 98, 0, 0.9)",
     "&::after": {
       content: '""',
       position: "absolute",
@@ -183,7 +188,7 @@ const linkStyle = {
       left: 0,
       width: "100%",
       height: "3px",
-      background: "rgba(0, 123, 255, 0.9)",
+      background: "rgba(220, 105, 33, 0.9)",
       borderRadius: "5px",
     },
   },

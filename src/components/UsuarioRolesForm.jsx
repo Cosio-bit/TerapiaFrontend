@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+/**import React, { useState } from "react";
 import { Box, Button, TextField, Typography } from "@mui/material";
 
 const UsuarioRolesForm = ({ usuario, roles, onSave }) => {
@@ -34,7 +34,7 @@ const UsuarioRolesForm = ({ usuario, roles, onSave }) => {
 
     return (
         <Box>
-            {/* Proveedor Form */}
+            
             {roles.proveedor && (
                 <Box mb={4}>
                     <Typography variant="h6">Proveedor</Typography>
@@ -85,7 +85,6 @@ const UsuarioRolesForm = ({ usuario, roles, onSave }) => {
                 </Box>
             )}
 
-            {/* Cliente Form */}
             {roles.cliente && (
                 <Box mb={4}>
                     <Typography variant="h6">Cliente</Typography>
@@ -120,7 +119,7 @@ const UsuarioRolesForm = ({ usuario, roles, onSave }) => {
                 </Box>
             )}
 
-            {/* Profesional Form */}
+
             {roles.profesional && (
                 <Box mb={4}>
                     <Typography variant="h6">Profesional</Typography>
@@ -175,3 +174,4 @@ const UsuarioRolesForm = ({ usuario, roles, onSave }) => {
 };
 
 export default UsuarioRolesForm;
+*/

@@ -1,8 +1,25 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Typography, Button, Box, Container, Grid } from "@mui/material";
 import { Link } from "react-router-dom";
+import { fetchImage } from "../utils/unsplash"; // Importa la función desde utils
 
 function LandingPage() {
+  const [unsplashImage, setUnsplashImage] = useState(""); // Estado para la imagen dinámica
+
+  useEffect(() => {
+    const loadImage = async () => {
+      try {
+        // Puedes cambiar "therapy" por otro término relevante para buscar imágenes
+        const imageUrl = await fetchImage("random"); 
+        setUnsplashImage(imageUrl);
+      } catch (error) {
+        console.error("Error fetching Unsplash image:", error);
+      }
+    };
+
+    loadImage();
+  }, []);
+
   return (
     <Box
       sx={{
@@ -66,19 +83,33 @@ function LandingPage() {
             </Button>
           </Grid>
 
-          {/* Imagen o visual llamativo */}
+          {/* Imagen dinámica de Unsplash */}
           <Grid item xs={12} md={6}>
-            <Box
-              component="img"
-              src="/therapy-illustration.png"
-              alt="Terapias"
-              sx={{
-                width: "100%",
-                maxWidth: "500px",
-                borderRadius: "20px",
-                boxShadow: "0px 10px 20px rgba(0, 0, 0, 0.3)",
-              }}
-            />
+            {unsplashImage ? (
+              <Box
+                component="img"
+                src={unsplashImage}
+                alt="Terapias"
+                sx={{
+                  width: "100%",
+                  maxWidth: "500px",
+                  borderRadius: "20px",
+                  boxShadow: "0px 10px 20px rgba(0, 0, 0, 0.3)",
+                }}
+              />
+            ) : (
+              <Typography
+                variant="h6"
+                color="white"
+                sx={{
+                  fontFamily: "'Montserrat', sans-serif",
+                  fontWeight: "400",
+                  textAlign: "center",
+                }}
+              >
+                Cargando imagen...
+              </Typography>
+            )}
           </Grid>
         </Grid>
       </Container>
