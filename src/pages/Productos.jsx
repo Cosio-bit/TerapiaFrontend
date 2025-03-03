@@ -1,101 +1,124 @@
 import React, { useState, useEffect } from "react";
 import { Box, Button, Snackbar, Alert, Typography } from "@mui/material";
 import {
-  getAllProductos,
+  fetchProductos,
   createProducto,
   updateProducto,
   deleteProducto,
 } from "../api/productoApi";
 import { getAllProveedores } from "../api/proveedorApi";
-import { getAllCategorias } from "../api/categoriaApi";
 import ProductosTable from "../components/ProductosTable";
 import ProductoFormDialog from "../components/ProductoFormDialog";
 
 const Productos = () => {
   const [productos, setProductos] = useState([]);
   const [proveedores, setProveedores] = useState([]);
-  const [categorias, setCategorias] = useState([]);
   const [currentProducto, setCurrentProducto] = useState(null);
   const [editing, setEditing] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
 
-  // Cargar datos iniciales
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [productosData, proveedoresData, categoriasData] = await Promise.all([
-          getAllProductos(),
-          getAllProveedores(),
-          getAllCategorias(),
-        ]);
-        setProductos(productosData);
-        setProveedores(proveedoresData);
-        setCategorias(categoriasData);
-      } catch {
-        setSnackbar({
-          open: true,
-          message: "Error al cargar los datos.",
-          severity: "error",
-        });
-      }
-    };
-
-    fetchData();
+    fetchProductosData();
+    fetchProveedoresData();
   }, []);
 
-  // Guardar o actualizar producto
+  const fetchProductosData = async () => {
+    try {
+      const data = await fetchProductos();
+      console.log("📤 API Response for Productos:", JSON.stringify(data, null, 2));
+
+      if (Array.isArray(data)) {
+        setProductos(data);
+      } else {
+        console.error("❌ API returned unexpected data structure:", data);
+        setProductos([]);
+      }
+    } catch (error) {
+      console.error("❌ Error fetching productos:", error);
+      setSnackbar({ open: true, message: "Error al cargar productos.", severity: "error" });
+    }
+  };
+
+  const fetchProveedoresData = async () => {
+    try {
+      const data = await getAllProveedores();
+      setProveedores(data || []);
+    } catch (error) {
+      console.error("❌ Error fetching proveedores:", error);
+      setSnackbar({ open: true, message: "Error al cargar proveedores.", severity: "error" });
+    }
+  };
+
   const handleSaveProducto = async (producto) => {
     try {
+      console.log("📤 Saving Producto:", JSON.stringify(producto, null, 2));
+
       if (editing) {
+        if (!currentProducto?.id_producto) {
+          console.error("⚠️ No se puede actualizar, falta ID de Producto.");
+          setSnackbar({ open: true, message: "Error: No se puede actualizar, falta ID.", severity: "error" });
+          return;
+        }
+        console.log("🛠 Updating Producto with ID:", currentProducto.id_producto);
         await updateProducto(currentProducto.id_producto, producto);
       } else {
+        console.log("🆕 Creating new Producto");
         await createProducto(producto);
       }
-      setProductos(await getAllProductos());
+
+      fetchProductosData();
       setOpenDialog(false);
       setSnackbar({
         open: true,
         message: editing ? "Producto actualizado con éxito." : "Producto creado con éxito.",
         severity: "success",
       });
-    } catch {
-      setSnackbar({
-        open: true,
-        message: "Error al guardar el producto.",
-        severity: "error",
-      });
+    } catch (error) {
+      console.error("❌ Error saving producto:", error);
+      setSnackbar({ open: true, message: "Error al guardar el producto.", severity: "error" });
     }
   };
 
-  // Editar producto
   const handleEditProducto = (producto) => {
-    setEditing(true);
-    setCurrentProducto(producto);
-    setOpenDialog(true);
-  };
+    console.log("✏️ Editing Producto:", JSON.stringify(producto, null, 2));
 
-  // Eliminar producto
+    if (!producto.id && !producto.id_producto) {
+      console.error("⚠️ Error: No se encontró el ID de Producto.");
+      return;
+    }
+
+    const updatedProducto = {
+      id_producto: producto.id_producto || producto.id,
+      proveedor: producto.proveedor ? producto.proveedor : {}, // ✅ Ensure proveedor is an object, even if it's just an empty object
+      nombre: producto.nombre || "",
+      descripcion: producto.descripcion || "",
+      precio: typeof producto.precio === "string"
+        ? parseFloat(producto.precio.replace(/[^0-9.]/g, "")) || 0
+        : producto.precio || 0,
+      stock: typeof producto.stock === "string"
+        ? parseInt(producto.stock, 10) || 0
+        : producto.stock || 0,
+    };
+
+    console.log("📝 Formulario cargado con datos (AFTER FIX):", JSON.stringify(updatedProducto, null, 2));
+
+    setCurrentProducto(updatedProducto);
+    setEditing(true);
+
+    setTimeout(() => setOpenDialog(true), 100);
+};
+
   const handleDeleteProducto = async (id) => {
     try {
       await deleteProducto(id);
-      setProductos(await getAllProductos());
-      setSnackbar({
-        open: true,
-        message: "Producto eliminado con éxito.",
-        severity: "success",
-      });
-    } catch {
-      setSnackbar({
-        open: true,
-        message: "Error al eliminar el producto.",
-        severity: "error",
-      });
+      fetchProductosData();
+      setSnackbar({ open: true, message: "Producto eliminado con éxito.", severity: "success" });
+    } catch (error) {
+      console.error("❌ Error deleting producto:", error);
+      setSnackbar({ open: true, message: "Error al eliminar el producto.", severity: "error" });
     }
   };
-
-  // Cerrar Snackbar
-  const handleCloseSnackbar = () => setSnackbar({ open: false, message: "", severity: "success" });
 
   return (
     <Box p={4}>
@@ -114,11 +137,7 @@ const Productos = () => {
         Crear Producto
       </Button>
 
-      <ProductosTable
-        productos={productos}
-        onEdit={handleEditProducto}
-        onDelete={handleDeleteProducto}
-      />
+      <ProductosTable productos={productos} onEdit={handleEditProducto} onDelete={handleDeleteProducto} />
 
       <ProductoFormDialog
         open={openDialog}
@@ -126,16 +145,16 @@ const Productos = () => {
         onSave={handleSaveProducto}
         producto={currentProducto}
         proveedores={proveedores}
-        categorias={categorias}
         editing={editing}
+        setSnackbar={setSnackbar}
       />
 
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
+        onClose={() => setSnackbar({ open: false, message: "", severity: "success" })}
       >
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity}>
+        <Alert onClose={() => setSnackbar({ open: false, message: "", severity: "success" })} severity={snackbar.severity}>
           {snackbar.message}
         </Alert>
       </Snackbar>

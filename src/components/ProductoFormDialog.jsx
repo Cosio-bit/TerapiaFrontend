@@ -1,74 +1,83 @@
 import React, { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  TextField,
-  Button,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-} from "@mui/material";
+import { Dialog, DialogActions, DialogContent, DialogTitle, TextField, Button, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 
-const ProductoFormDialog = ({
-  open,
-  onClose,
-  onSave,
-  producto,
-  proveedores,
-  categorias,
+const ProductoFormDialog = ({ 
+  open, 
+  onClose, 
+  onSave, 
+  producto, 
+  proveedores, 
   editing,
+  setSnackbar
 }) => {
   const [formProducto, setFormProducto] = useState({
+    proveedor: "",
     nombre: "",
     descripcion: "",
-    fecha_creacion: "",
     precio: "",
     stock: "",
-    id_proveedor: "",
-    id_categoria: "",
   });
-  const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    if (producto) {
-      setFormProducto(producto);
+    if (producto?.id_producto) {
+      console.log("Opening dialog with producto:", producto);
+
+      // Find `proveedor` by matching name or ID
+      const proveedorId = proveedores.find(p => p.usuario.nombre === producto.proveedor)?.id_proveedor || ""; // Match by name or default to empty string
+
+      const updatedForm = {
+        proveedor: proveedorId,  // Ensure only the ID is used
+        nombre: producto.nombre || "",
+        descripcion: producto.descripcion || "",
+        precio: typeof producto.precio === "string"
+          ? parseFloat(producto.precio.replace(/[^0-9.]/g, "")) || 0
+          : producto.precio || 0,
+        stock: typeof producto.stock === "string"
+          ? parseInt(producto.stock, 10) || 0
+          : producto.stock || 0,
+      };
+
+      console.log("📝 Updated formProducto (AFTER FIX):", updatedForm);
+
+      setFormProducto(updatedForm);
     } else {
       setFormProducto({
+        proveedor: "",
         nombre: "",
         descripcion: "",
-        fecha_creacion: "",
         precio: "",
         stock: "",
-        id_proveedor: "",
-        id_categoria: "",
       });
     }
-    setErrors({});
-  }, [producto]);
+  }, [producto, open]);
 
-  const validateForm = () => {
-    const newErrors = {};
-    if (!formProducto.nombre) newErrors.nombre = "El nombre es obligatorio.";
-    if (!formProducto.precio || formProducto.precio <= 0)
-      newErrors.precio = "El precio debe ser mayor a 0.";
-    if (!formProducto.stock || formProducto.stock < 0)
-      newErrors.stock = "El stock no puede ser negativo.";
-    if (!formProducto.fecha_creacion)
-      newErrors.fecha_creacion = "La fecha de creación es obligatoria.";
-    if (!formProducto.id_proveedor)
-      newErrors.id_proveedor = "El proveedor es obligatorio.";
-    if (!formProducto.id_categoria)
-      newErrors.id_categoria = "La categoría es obligatoria.";
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  const handleSave = async () => {
+    console.log("Saving producto:", formProducto);
 
-  const handleSave = () => {
-    if (validateForm()) {
-      onSave(formProducto);
+    if (!formProducto.proveedor || !formProducto.nombre || formProducto.precio === "" || formProducto.stock === "") {
+      console.warn("Validation failed: missing required fields.");
+      setSnackbar({ open: true, message: "Complete todos los campos obligatorios.", severity: "error" });
+      return;
+    }
+
+    const payload = {
+      proveedor: { id_proveedor: formProducto.proveedor },  // Pass only the ID of the proveedor as an object
+      nombre: formProducto.nombre,
+      descripcion: formProducto.descripcion,
+      precio: Number(formProducto.precio),
+      stock: Number(formProducto.stock),
+    };
+
+    console.log("Payload to send:", payload);
+
+    try {
+      await onSave(payload);
+      console.log("Producto saved successfully.");
+      setSnackbar({ open: true, message: "Producto guardado con éxito.", severity: "success" });
+      onClose();
+    } catch (error) {
+      console.error("Error saving producto:", error);
+      setSnackbar({ open: true, message: "Error al guardar el producto.", severity: "error" });
     }
   };
 
@@ -76,99 +85,65 @@ const ProductoFormDialog = ({
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>{editing ? "Editar Producto" : "Crear Producto"}</DialogTitle>
       <DialogContent>
+        {/* Proveedor Selection */}
+        <FormControl fullWidth margin="dense">
+          <InputLabel>Proveedor</InputLabel>
+          <Select
+            value={formProducto.proveedor || ""}
+            onChange={(e) => setFormProducto({ ...formProducto, proveedor: e.target.value })}
+          >
+            {proveedores.map((proveedor) => (
+              <MenuItem key={proveedor.id_proveedor} value={proveedor.id_proveedor}>
+                {proveedor.usuario?.nombre || "Sin nombre"}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        {/* Nombre */}
         <TextField
           margin="dense"
           label="Nombre"
           fullWidth
           value={formProducto.nombre}
-          onChange={(e) =>
-            setFormProducto({ ...formProducto, nombre: e.target.value })
-          }
-          error={!!errors.nombre}
-          helperText={errors.nombre}
+          onChange={(e) => setFormProducto({ ...formProducto, nombre: e.target.value })}
         />
+
+        {/* Descripción */}
         <TextField
           margin="dense"
           label="Descripción"
           fullWidth
           multiline
           value={formProducto.descripcion}
-          onChange={(e) =>
-            setFormProducto({ ...formProducto, descripcion: e.target.value })
-          }
+          onChange={(e) => setFormProducto({ ...formProducto, descripcion: e.target.value })}
         />
-        <TextField
-          margin="dense"
-          label="Fecha de Creación"
-          type="datetime-local"
-          fullWidth
-          InputLabelProps={{ shrink: true }}
-          value={formProducto.fecha_creacion}
-          onChange={(e) =>
-            setFormProducto({
-              ...formProducto,
-              fecha_creacion: e.target.value,
-            })
-          }
-          error={!!errors.fecha_creacion}
-          helperText={errors.fecha_creacion}
-        />
+
+        {/* Precio */}
         <TextField
           margin="dense"
           label="Precio"
           type="number"
           fullWidth
           value={formProducto.precio}
-          onChange={(e) =>
-            setFormProducto({ ...formProducto, precio: parseFloat(e.target.value) })
-          }
-          error={!!errors.precio}
-          helperText={errors.precio}
+          onChange={(e) => setFormProducto({ 
+            ...formProducto, 
+            precio: e.target.value === "" ? "" : Number(e.target.value) 
+          })}
         />
+
+        {/* Stock */}
         <TextField
           margin="dense"
           label="Stock"
           type="number"
           fullWidth
           value={formProducto.stock}
-          onChange={(e) =>
-            setFormProducto({ ...formProducto, stock: parseInt(e.target.value, 10) })
-          }
-          error={!!errors.stock}
-          helperText={errors.stock}
+          onChange={(e) => setFormProducto({ 
+            ...formProducto, 
+            stock: e.target.value === "" ? "" : Number(e.target.value)
+          })}
         />
-        <FormControl fullWidth margin="dense">
-          <InputLabel>Proveedor</InputLabel>
-          <Select
-            value={formProducto.id_proveedor}
-            onChange={(e) =>
-              setFormProducto({ ...formProducto, id_proveedor: e.target.value })
-            }
-            error={!!errors.id_proveedor}
-          >
-            {proveedores.map((proveedor) => (
-              <MenuItem key={proveedor.id_proveedor} value={proveedor.id_proveedor}>
-                {proveedor.nombre}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl fullWidth margin="dense">
-          <InputLabel>Categoría</InputLabel>
-          <Select
-            value={formProducto.id_categoria}
-            onChange={(e) =>
-              setFormProducto({ ...formProducto, id_categoria: e.target.value })
-            }
-            error={!!errors.id_categoria}
-          >
-            {categorias.map((categoria) => (
-              <MenuItem key={categoria.id_categoria} value={categoria.id_categoria}>
-                {categoria.nombre}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancelar</Button>

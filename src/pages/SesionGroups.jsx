@@ -146,9 +146,6 @@ const handleEditSesionGroup = (sesionGroup) => {
 };
 
 
-
-
-
   const handleDeleteSesionGroup = async (id) => {
     try {
       await deleteSesionGroup(id);

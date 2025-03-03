@@ -1,21 +1,27 @@
 import React from "react";
-import { Box, Button } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 
 const ProductosTable = ({ productos, onEdit, onDelete }) => {
+  const rows = Array.isArray(productos) ? productos : [];
+
   return (
     <Box mt={3}>
       <DataGrid
-        rows={productos.map((producto) => ({
-          ...producto,
-          id: producto.id_producto,
+        rows={rows.map((producto) => ({
+          id: producto?.id_producto, // ✅ Ensure `id_producto` is set
+          nombre: producto?.nombre || "No especificado",
+          descripcion: producto?.descripcion || "No especificado",
+          precio: producto?.precio ? `$${producto.precio}` : "No especificado",
+          stock: producto?.stock || "No especificado",
+          proveedor: producto?.proveedor?.usuario?.nombre || "No especificado", // ✅ Fetch the provider's name
         }))}
         columns={[
           { field: "nombre", headerName: "Nombre", flex: 1 },
-          { field: "descripcion", headerName: "Descripción", flex: 2 },
+          { field: "descripcion", headerName: "Descripción", flex: 1 },
           { field: "precio", headerName: "Precio", flex: 1 },
           { field: "stock", headerName: "Stock", flex: 1 },
-          { field: "fecha_creacion", headerName: "Fecha de Creación", flex: 1 },
+          { field: "proveedor", headerName: "Proveedor", flex: 1 }, // ✅ Show provider's name
           {
             field: "actions",
             headerName: "Acciones",
