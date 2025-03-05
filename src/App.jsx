@@ -87,6 +87,10 @@ function App() {
               <Button component={Link} to="/clientes" sx={linkStyle}>
                 Clientes
               </Button>
+              <Button component={Link} to="/compras" sx={linkStyle}>
+                  
+                Compras
+              </Button>
               
               <Button component={Link} to="/fichas-salud" sx={linkStyle}>
                 Fichas Salud
@@ -149,7 +153,7 @@ function App() {
       <Route path="/arriendos" element={<Arriendos />} />
       <Route path="/categorias" element={<Categorias />} />
       <Route path="/clientes" element={<Clientes />} />
-      
+      <Route path="/compras" element={<Compras />} />
       <Route path="/fichas-salud" element={<FichasSalud />} />
       <Route path="/productos-comprados" element={<ProductosComprados />} />
       <Route path="/productos" element={<Productos />} />

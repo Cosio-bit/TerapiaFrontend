@@ -36,10 +36,11 @@ export const fetchProductoCompradoById = async (id) => {
  */
 export const createProductoComprado = async (productoComprado) => {
   try {
+    console.log("📤 Sending purchased product data to backend:", JSON.stringify(productoComprado, null, 2)); // 🐛 Debug request payload
     const response = await axiosInstance.post("/api/productos-comprados", productoComprado);
     return response.data;
   } catch (error) {
-    console.error("Error creating purchased product:", error);
+    console.error("❌ Error creating purchased product:", error.response?.data || error.message);
     throw error;
   }
 };
@@ -74,16 +75,15 @@ export const deleteProductoComprado = async (id) => {
 };
 
 /**
- * Bulk import purchased products
- * @param {Array} productosComprados - List of purchased products to create
- * @returns {Promise<Array>} List of created purchased products
+ * Fetch all products to associate with a purchased product
+ * @returns {Promise<Array>} List of products
  */
-export const bulkCreateProductosComprados = async (productosComprados) => {
+export const getAllProductos = async () => {
   try {
-    const response = await axiosInstance.post("/api/productos-comprados/importar", productosComprados);
+    const response = await axiosInstance.get("/api/productos");
     return response.data;
   } catch (error) {
-    console.error("Error bulk creating purchased products:", error);
+    console.error("Error fetching products:", error);
     throw error;
   }
 };

@@ -10,72 +10,79 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  IconButton,
 } from "@mui/material";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import DeleteIcon from "@mui/icons-material/Delete";
+import dayjs from "dayjs";
 
-const CompraFormDialog = ({
-  open,
-  onClose,
-  onSave,
-  compra,
-  clientes,
-  productos,
+const CompraFormDialog = ({ 
+  open, 
+  onClose, 
+  onSave, 
+  compra, 
+  clientes = [], 
+  productos = [], 
   editing,
+  setSnackbar 
 }) => {
   const [formCompra, setFormCompra] = useState({
-    id_cliente: "",
-    fecha: "",
-    total: 0,
-    productosComprados: [],
+    id_compra: null,
+    cliente: { id_cliente: "" },
+    fecha: dayjs().format("YYYY-MM-DDTHH:mm"),
+    productosComprados: [{ id_producto: "", cantidad: 1 }],
   });
-  const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    if (compra) {
-      setFormCompra(compra);
-    } else {
+    if (!open) return;
+  
+    if (editing && compra) {
+      console.log("✏️ Editing compra:", compra);
+  
       setFormCompra({
-        id_cliente: "",
-        fecha: "",
-        total: 0,
-        productosComprados: [],
+        id_compra: compra.id_compra ?? null,
+        cliente: compra.cliente ? { id_cliente: compra.cliente.id_cliente } : { id_cliente: "" },
+        fecha: compra.fecha 
+          ? dayjs(compra.fecha).format("YYYY-MM-DDTHH:mm") 
+          : dayjs().format("YYYY-MM-DDTHH:mm"),
+        productosComprados: compra.productosComprados?.map(prod => ({
+          id_producto_comprado: prod.id_producto_comprado || null,
+          id_producto: prod.producto?.id_producto || "",
+          cantidad: prod.cantidad || 1,
+        })) || [{ id_producto: "", cantidad: 1 }],
+      });
+    } else {
+      console.log("🆕 Creating new compra");
+      setFormCompra({
+        id_compra: null,
+        cliente: { id_cliente: "" },
+        fecha: dayjs().format("YYYY-MM-DDTHH:mm"),
+        productosComprados: [{ id_producto: "", cantidad: 1 }],
       });
     }
-    setErrors({});
-  }, [compra]);
+  }, [open, compra]);
+  
+  
 
-  const validateForm = () => {
-    const newErrors = {};
-    if (!formCompra.id_cliente) newErrors.id_cliente = "El cliente es obligatorio.";
-    if (!formCompra.fecha) newErrors.fecha = "La fecha es obligatoria.";
-    if (formCompra.productosComprados.length === 0)
-      newErrors.productosComprados = "Debe agregar al menos un producto.";
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSave = () => {
-    if (validateForm()) {
-      onSave(formCompra);
+  const handleSave = async () => {
+    if (!formCompra.cliente.id_cliente || formCompra.productosComprados.length === 0) {
+      setSnackbar({ open: true, message: "Debe seleccionar un cliente y al menos un producto.", severity: "error" });
+      return;
     }
-  };
 
-  const handleAddProducto = () => {
-    setFormCompra((prevState) => ({
-      ...prevState,
-      productosComprados: [
-        ...prevState.productosComprados,
-        { id_producto: "", cantidad: 1 },
-      ],
-    }));
-  };
+    const payload = {
+      id_compra: editing ? formCompra.id_compra : undefined,
+      cliente: { id_cliente: formCompra.cliente.id_cliente },
+      fecha: formCompra.fecha ? dayjs(formCompra.fecha).format("YYYY-MM-DDTHH:mm:ss") : null,
+      productosComprados: formCompra.productosComprados.map(prod => ({
+        id_producto_comprado: prod.id_producto_comprado || null,
+        producto: { id_producto: prod.id_producto },
+        cantidad: prod.cantidad || 1,
+      })),
+    };
 
-  const handleRemoveProducto = (index) => {
-    const updatedProductos = [...formCompra.productosComprados];
-    updatedProductos.splice(index, 1);
-    setFormCompra((prevState) => ({
-      ...prevState,
-      productosComprados: updatedProductos,
-    }));
+    console.log("🚀 Saving compra:", JSON.stringify(payload, null, 2));
+    onSave(payload);
   };
 
   return (
@@ -83,78 +90,94 @@ const CompraFormDialog = ({
       <DialogTitle>{editing ? "Editar Compra" : "Crear Compra"}</DialogTitle>
       <DialogContent>
         <FormControl fullWidth margin="dense">
-          <InputLabel>Cliente</InputLabel>
-          <Select
-            value={formCompra.id_cliente}
-            onChange={(e) =>
-              setFormCompra({ ...formCompra, id_cliente: e.target.value })
-            }
-            error={!!errors.id_cliente}
-          >
-            {clientes.map((cliente) => (
-              <MenuItem key={cliente.id_cliente} value={cliente.id_cliente}>
-                {cliente.nombre}
-              </MenuItem>
-            ))}
-          </Select>
+          <InputLabel></InputLabel>
+          <FormControl fullWidth margin="dense">
+  <InputLabel>Cliente</InputLabel>
+  <Select
+    value={formCompra.cliente?.id_cliente || ""}
+    onChange={(e) =>
+      setFormCompra(prevState => ({
+        ...prevState,
+        cliente: { id_cliente: e.target.value } // ✅ Ensure proper object structure
+      }))
+    }
+  >
+    {clientes.length > 0 ? (
+      clientes.map((cliente) => (
+        <MenuItem key={cliente.id_cliente} value={cliente.id_cliente}>
+          {cliente.usuario.nombre}
+        </MenuItem>
+      ))
+    ) : (
+      <MenuItem disabled>No hay clientes disponibles</MenuItem>
+    )}
+  </Select>
+</FormControl>
+
         </FormControl>
+
         <TextField
-          margin="dense"
-          label="Fecha"
+          label="Fecha de Compra"
           type="datetime-local"
           fullWidth
-          InputLabelProps={{ shrink: true }}
+          margin="dense"
           value={formCompra.fecha}
           onChange={(e) => setFormCompra({ ...formCompra, fecha: e.target.value })}
-          error={!!errors.fecha}
-          helperText={errors.fecha}
         />
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={handleAddProducto}
-        >
-          Agregar Producto
-        </Button>
-        {formCompra.productosComprados.map((producto, index) => (
-          <div key={index}>
-            <FormControl fullWidth margin="dense">
-              <InputLabel>Producto</InputLabel>
-              <Select
-                value={producto.id_producto}
+
+        <div>
+          <h4>Productos Comprados</h4>
+          {formCompra.productosComprados.map((producto, index) => (
+            <div key={index} style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
+              <FormControl fullWidth>
+                <InputLabel>Producto</InputLabel>
+                <Select
+                  value={producto.id_producto || ""}
+                  onChange={(e) => {
+                    const updatedProductos = [...formCompra.productosComprados];
+                    updatedProductos[index].id_producto = e.target.value;
+                    setFormCompra({ ...formCompra, productosComprados: updatedProductos });
+                  }}
+                >
+                  {productos.length > 0 ? (
+                    productos.map((prod) => (
+                      <MenuItem key={prod.id_producto} value={prod.id_producto}>
+                        {prod.nombre}
+                      </MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem disabled>No hay productos disponibles</MenuItem>
+                  )}
+                </Select>
+              </FormControl>
+              <TextField
+                label="Cantidad"
+                type="number"
+                value={producto.cantidad || 1}
                 onChange={(e) => {
                   const updatedProductos = [...formCompra.productosComprados];
-                  updatedProductos[index].id_producto = e.target.value;
+                  updatedProductos[index].cantidad = e.target.value;
                   setFormCompra({ ...formCompra, productosComprados: updatedProductos });
                 }}
-              >
-                {productos.map((prod) => (
-                  <MenuItem key={prod.id_producto} value={prod.id_producto}>
-                    {prod.nombre}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <TextField
-              margin="dense"
-              label="Cantidad"
-              type="number"
-              fullWidth
-              value={producto.cantidad}
-              onChange={(e) => {
-                const updatedProductos = [...formCompra.productosComprados];
-                updatedProductos[index].cantidad = e.target.value;
+                inputProps={{ min: 1 }}
+              />
+              <IconButton onClick={() => {
+                const updatedProductos = formCompra.productosComprados.filter((_, i) => i !== index);
                 setFormCompra({ ...formCompra, productosComprados: updatedProductos });
-              }}
-            />
-            <Button
-              color="error"
-              onClick={() => handleRemoveProducto(index)}
-            >
-              Eliminar
-            </Button>
-          </div>
-        ))}
+              }} color="error">
+                <DeleteIcon />
+              </IconButton>
+            </div>
+          ))}
+          <Button startIcon={<AddCircleOutlineIcon />} onClick={() => {
+            setFormCompra(prevState => ({
+              ...prevState,
+              productosComprados: [...prevState.productosComprados, { id_producto: "", cantidad: 1 }],
+            }));
+          }} variant="outlined">
+            Agregar Producto
+          </Button>
+        </div>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancelar</Button>

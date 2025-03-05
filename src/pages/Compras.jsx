@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Box, Button, Snackbar, Alert, Typography } from "@mui/material";
+import dayjs from "dayjs";
 import {
-  getAllCompras,
+  fetchCompras,
   createCompra,
   updateCompra,
   deleteCompra,
@@ -20,39 +21,62 @@ const Compras = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
 
-  // Cargar datos iniciales
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [comprasData, clientesData, productosData] = await Promise.all([
-          getAllCompras(),
-          getAllClientes(),
-          getAllProductos(),
-        ]);
-        setCompras(comprasData);
-        setClientes(clientesData);
-        setProductos(productosData);
-      } catch (error) {
-        setSnackbar({
-          open: true,
-          message: "Error al cargar los datos: " + error.message,
-          severity: "error",
-        });
-      }
-    };
-
-    fetchData();
+    fetchComprasData();
+    fetchClientesData();
+    fetchProductosData();
   }, []);
 
-  // Guardar o actualizar compra
+  const fetchComprasData = async () => {
+    try {
+      const data = await fetchCompras();
+      console.log("📤 API Response for Compras:", JSON.stringify(data, null, 2));
+      setCompras(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("❌ Error fetching purchases:", error);
+      setSnackbar({ open: true, message: "Error al cargar las compras.", severity: "error" });
+    }
+  };
+
+  const fetchClientesData = async () => {
+    try {
+      const data = await getAllClientes();
+      console.log("📌 Fetched Clientes from API:", JSON.stringify(data, null, 2));
+  
+      if (Array.isArray(data) && data.length > 0) {
+        setClientes(data);
+      } else {
+        console.warn("⚠️ API returned an empty client list");
+        setClientes([]);
+      }
+    } catch (error) {
+      console.error("❌ Error fetching clientes:", error);
+      setSnackbar({ open: true, message: "Error al cargar clientes.", severity: "error" });
+    }
+  };
+  
+
+  const fetchProductosData = async () => {
+    try {
+      const data = await getAllProductos();
+      setProductos(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("❌ Error fetching productos:", error);
+      setSnackbar({ open: true, message: "Error al cargar productos.", severity: "error" });
+    }
+  };
+
   const handleSaveCompra = async (compra) => {
     try {
+      console.log("📤 Saving Compra:", JSON.stringify(compra, null, 2));
+
       if (editing) {
         await updateCompra(currentCompra.id_compra, compra);
       } else {
         await createCompra(compra);
       }
-      setCompras(await getAllCompras());
+
+      fetchComprasData();
       setOpenDialog(false);
       setSnackbar({
         open: true,
@@ -60,43 +84,60 @@ const Compras = () => {
         severity: "success",
       });
     } catch (error) {
-      setSnackbar({
-        open: true,
-        message: "Error al guardar la compra: " + error.message,
-        severity: "error",
-      });
+      console.error("❌ Error saving purchase:", error);
+      setSnackbar({ open: true, message: "Error al guardar la compra.", severity: "error" });
     }
   };
-
-  // Editar compra
-  const handleEditCompra = (compra) => {
+  const handleEditCompra = async (compra) => {
+    console.log("✏️ Editing Compra (Raw Data):", JSON.stringify(compra, null, 2));
+  
+    // Ensure `cliente` is an object, not a string
+    let clienteSeleccionado = { id_cliente: "" };
+  
+    if (typeof compra.cliente === "string") {
+      console.warn("⚠️ Cliente is a string, trying to match with clientes list...");
+      const matchedCliente = clientes.find((c) => c.usuario.nombre === compra.cliente);
+      if (matchedCliente) {
+        clienteSeleccionado = { id_cliente: matchedCliente.id_cliente };
+      } else {
+        console.error("❌ No matching cliente found for:", compra.cliente);
+      }
+    } else if (compra.cliente?.id_cliente) {
+      clienteSeleccionado = { id_cliente: compra.cliente.id_cliente };
+    }
+  
+    console.log("👉 Cliente seleccionado (Structured Object):", clienteSeleccionado);
+  
+    const updatedCompra = {
+      id_compra: compra.id_compra,
+      cliente: clienteSeleccionado, // ✅ Ensure it's an object
+      fecha: compra.fecha ? dayjs(compra.fecha).format("YYYY-MM-DDTHH:mm") : "",
+      productosComprados: compra.productosComprados?.map(prod => ({
+        id_producto_comprado: prod.id_producto_comprado || null,
+        producto: { id_producto: prod.producto?.id_producto || null },
+        cantidad: prod.cantidad || 1,
+      })) || [],
+    };
+  
+    console.log("📝 Formulario cargado con datos (AFTER FIX):", JSON.stringify(updatedCompra, null, 2));
+  
+    setCurrentCompra(updatedCompra);
     setEditing(true);
-    setCurrentCompra(compra);
-    setOpenDialog(true);
+    setTimeout(() => setOpenDialog(true), 100);
   };
-
-  // Eliminar compra
+  
+  
+  
+  
   const handleDeleteCompra = async (id) => {
     try {
       await deleteCompra(id);
-      setCompras(await getAllCompras());
-      setSnackbar({
-        open: true,
-        message: "Compra eliminada con éxito.",
-        severity: "success",
-      });
+      fetchComprasData();
+      setSnackbar({ open: true, message: "Compra eliminada con éxito.", severity: "success" });
     } catch (error) {
-      setSnackbar({
-        open: true,
-        message: "Error al eliminar la compra: " + error.message,
-        severity: "error",
-      });
+      console.error("❌ Error deleting purchase:", error);
+      setSnackbar({ open: true, message: "Error al eliminar la compra.", severity: "error" });
     }
-  };
-
-  // Cerrar Snackbar
-  const handleCloseSnackbar = () => {
-    setSnackbar({ open: false, message: "", severity: "success" });
   };
 
   return (
@@ -116,11 +157,7 @@ const Compras = () => {
         Crear Compra
       </Button>
 
-      <ComprasTable
-        compras={compras}
-        onEdit={handleEditCompra}
-        onDelete={handleDeleteCompra}
-      />
+      <ComprasTable compras={compras} onEdit={handleEditCompra} onDelete={handleDeleteCompra} />
 
       <CompraFormDialog
         open={openDialog}
@@ -130,14 +167,15 @@ const Compras = () => {
         clientes={clientes}
         productos={productos}
         editing={editing}
+        setSnackbar={setSnackbar}
       />
 
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
+        onClose={() => setSnackbar({ open: false, message: "", severity: "success" })}
       >
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity}>
+        <Alert onClose={() => setSnackbar({ open: false, message: "", severity: "success" })} severity={snackbar.severity}>
           {snackbar.message}
         </Alert>
       </Snackbar>

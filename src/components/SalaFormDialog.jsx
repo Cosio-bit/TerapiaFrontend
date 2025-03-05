@@ -1,61 +1,85 @@
 import React, { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  TextField,
-  Button,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-} from "@mui/material";
+import { Dialog, DialogActions, DialogContent, DialogTitle, TextField, Button, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 
-const SalaFormDialog = ({ open, onClose, onSave, sala, proveedores, editing }) => {
+const SalaFormDialog = ({ 
+  open, 
+  onClose, 
+  onSave, 
+  sala, 
+  proveedores, 
+  editing,
+  setSnackbar
+}) => {
   const [formSala, setFormSala] = useState({
+    proveedor: "",
     nombre: "",
     capacidad: "",
     precio: "",
     ubicacion: "",
     estado: "",
-    id_proveedor: "",
   });
-  const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    if (sala) {
-      setFormSala(sala);
+    if (sala?.id_sala) {
+      console.log("Opening dialog with sala:", sala);
+
+      // Find `proveedor` by matching name or ID
+      const proveedorId = proveedores.find(p => p.usuario.nombre === sala.proveedor)?.id_proveedor || ""; // Match by name or default to empty string
+
+      const updatedForm = {
+        proveedor: proveedorId,  // Ensure only the ID is used
+        nombre: sala.nombre || "",
+        capacidad: sala.capacidad || 0,
+        precio: typeof sala.precio === "string"
+          ? parseFloat(sala.precio.replace(/[^0-9.]/g, "")) || 0
+          : sala.precio || 0,
+        ubicacion: sala.ubicacion || "",
+        estado: sala.estado || "",
+      };
+
+      console.log("📝 Updated formSala (AFTER FIX):", updatedForm);
+
+      setFormSala(updatedForm);
     } else {
       setFormSala({
+        proveedor: "",
         nombre: "",
         capacidad: "",
         precio: "",
         ubicacion: "",
         estado: "",
-        id_proveedor: "",
       });
     }
-    setErrors({});
-  }, [sala]);
+  }, [sala, open]);
 
-  const validateForm = () => {
-    const newErrors = {};
-    if (!formSala.nombre) newErrors.nombre = "El nombre es obligatorio.";
-    if (!formSala.capacidad || formSala.capacidad <= 0)
-      newErrors.capacidad = "La capacidad debe ser mayor a 0.";
-    if (!formSala.precio || formSala.precio <= 0)
-      newErrors.precio = "El precio debe ser mayor a 0.";
-    if (!formSala.ubicacion) newErrors.ubicacion = "La ubicación es obligatoria.";
-    if (!formSala.estado) newErrors.estado = "El estado es obligatorio.";
-    if (!formSala.id_proveedor) newErrors.id_proveedor = "El proveedor es obligatorio.";
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  const handleSave = async () => {
+    console.log("Saving sala:", formSala);
 
-  const handleSave = () => {
-    if (validateForm()) {
-      onSave(formSala);
+    if (!formSala.proveedor || !formSala.nombre || formSala.precio === "" || formSala.capacidad === "" || !formSala.ubicacion || !formSala.estado) {
+      console.warn("Validation failed: missing required fields.");
+      setSnackbar({ open: true, message: "Complete todos los campos obligatorios.", severity: "error" });
+      return;
+    }
+
+    const payload = {
+      proveedor: { id_proveedor: formSala.proveedor },  // Pass only the ID of the proveedor as an object
+      nombre: formSala.nombre,
+      capacidad: Number(formSala.capacidad),
+      precio: Number(formSala.precio),
+      ubicacion: formSala.ubicacion,
+      estado: formSala.estado,
+    };
+
+    console.log("Payload to send:", payload);
+
+    try {
+      await onSave(payload);
+      console.log("Sala saved successfully.");
+      setSnackbar({ open: true, message: "Sala guardada con éxito.", severity: "success" });
+      onClose();
+    } catch (error) {
+      console.error("Error saving sala:", error);
+      setSnackbar({ open: true, message: "Error al guardar la sala.", severity: "error" });
     }
   };
 
@@ -63,77 +87,75 @@ const SalaFormDialog = ({ open, onClose, onSave, sala, proveedores, editing }) =
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>{editing ? "Editar Sala" : "Crear Sala"}</DialogTitle>
       <DialogContent>
+        {/* Proveedor Selection */}
+        <FormControl fullWidth margin="dense">
+          <InputLabel>Proveedor</InputLabel>
+          <Select
+            value={formSala.proveedor || ""}
+            onChange={(e) => setFormSala({ ...formSala, proveedor: e.target.value })}
+          >
+            {proveedores.map((proveedor) => (
+              <MenuItem key={proveedor.id_proveedor} value={proveedor.id_proveedor}>
+                {proveedor.usuario?.nombre || "Sin nombre"}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        {/* Nombre */}
         <TextField
           margin="dense"
           label="Nombre"
           fullWidth
           value={formSala.nombre}
-          onChange={(e) =>
-            setFormSala({ ...formSala, nombre: e.target.value })
-          }
-          error={!!errors.nombre}
-          helperText={errors.nombre}
+          onChange={(e) => setFormSala({ ...formSala, nombre: e.target.value })}
         />
+
+        {/* Capacidad */}
         <TextField
           margin="dense"
           label="Capacidad"
           type="number"
           fullWidth
           value={formSala.capacidad}
-          onChange={(e) =>
-            setFormSala({ ...formSala, capacidad: parseInt(e.target.value, 10) })
-          }
-          error={!!errors.capacidad}
-          helperText={errors.capacidad}
+          onChange={(e) => setFormSala({ 
+            ...formSala, 
+            capacidad: e.target.value === "" ? "" : Number(e.target.value) 
+          })}
         />
+
+        {/* Precio */}
         <TextField
           margin="dense"
           label="Precio"
           type="number"
           fullWidth
           value={formSala.precio}
-          onChange={(e) =>
-            setFormSala({ ...formSala, precio: parseInt(e.target.value, 10) })
-          }
-          error={!!errors.precio}
-          helperText={errors.precio}
+          onChange={(e) => setFormSala({ 
+            ...formSala, 
+            precio: e.target.value === "" ? "" : Number(e.target.value) 
+          })}
         />
+
+        {/* Ubicación */}
         <TextField
           margin="dense"
           label="Ubicación"
           fullWidth
           value={formSala.ubicacion}
-          onChange={(e) =>
-            setFormSala({ ...formSala, ubicacion: e.target.value })
-          }
-          error={!!errors.ubicacion}
-          helperText={errors.ubicacion}
+          onChange={(e) => setFormSala({ ...formSala, ubicacion: e.target.value })}
         />
-        <TextField
-          margin="dense"
-          label="Estado"
-          fullWidth
-          value={formSala.estado}
-          onChange={(e) =>
-            setFormSala({ ...formSala, estado: e.target.value })
-          }
-          error={!!errors.estado}
-          helperText={errors.estado}
-        />
+
+        {/* Estado */}
         <FormControl fullWidth margin="dense">
-          <InputLabel>Proveedor</InputLabel>
+          <InputLabel>Estado</InputLabel>
           <Select
-            value={formSala.id_proveedor}
-            onChange={(e) =>
-              setFormSala({ ...formSala, id_proveedor: e.target.value })
-            }
-            error={!!errors.id_proveedor}
+            value={formSala.estado}
+            onChange={(e) => setFormSala({ ...formSala, estado: e.target.value })}
           >
-            {proveedores.map((proveedor) => (
-              <MenuItem key={proveedor.id_proveedor} value={proveedor.id_proveedor}>
-                {proveedor.nombre}
-              </MenuItem>
-            ))}
+            <MenuItem value="available">Disponible</MenuItem>
+            <MenuItem value="maintenance">Mantenimiento</MenuItem>
+            <MenuItem value="reserved">Reservada</MenuItem>
           </Select>
         </FormControl>
       </DialogContent>

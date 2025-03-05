@@ -1,89 +1,85 @@
 import axiosInstance from "./axiosConfig";
 
 /**
- * Fetch all rooms
- * @returns {Promise<Array>} List of rooms
+ * Fetch all salas
+ * @returns {Promise<Array>} List of salas
  */
+export const fetchSalas = async () => {
+  try {
+    const response = await axiosInstance.get("/api/salas");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching salas:", error);
+    throw error;
+  }
+};
+
 export const getAllSalas = async () => {
   try {
     const response = await axiosInstance.get("/api/salas");
     return response.data;
   } catch (error) {
-    console.error("Error fetching rooms:", error);
+    console.error("Error fetching salas:", error);
     throw error;
   }
 };
 
 /**
- * Fetch a room by ID
- * @param {number} id - Room ID
- * @returns {Promise<Object>} Room details
+ * Fetch a sala by ID
+ * @param {number} id - Sala ID
+ * @returns {Promise<Object>} Sala details
  */
 export const fetchSalaById = async (id) => {
   try {
     const response = await axiosInstance.get(`/api/salas/${id}`);
     return response.data;
   } catch (error) {
-    console.error(`Error fetching room with ID ${id}:`, error);
+    console.error(`Error fetching sala with ID ${id}:`, error);
     throw error;
   }
 };
 
 /**
- * Create a new room
- * @param {Object} sala - Room data
- * @returns {Promise<Object>} Created room
+ * Create a new sala
+ * @param {Object} sala - Sala data
+ * @returns {Promise<Object>} Created sala
  */
 export const createSala = async (sala) => {
   try {
+    console.log("📤 Sending data to backend:", JSON.stringify(sala, null, 2)); // 🐛 Debug request payload
     const response = await axiosInstance.post("/api/salas", sala);
     return response.data;
   } catch (error) {
-    console.error("Error creating room:", error);
+    console.error("❌ Error creating sala:", error.response?.data || error.message);
     throw error;
   }
 };
 
 /**
- * Update an existing room
- * @param {number} id - Room ID
- * @param {Object} sala - Updated room data
- * @returns {Promise<Object>} Updated room
+ * Update an existing sala
+ * @param {number} id - Sala ID
+ * @param {Object} sala - Updated sala data
+ * @returns {Promise<Object>} Updated sala
  */
 export const updateSala = async (id, sala) => {
   try {
     const response = await axiosInstance.put(`/api/salas/${id}`, sala);
     return response.data;
   } catch (error) {
-    console.error(`Error updating room with ID ${id}:`, error);
+    console.error(`Error updating sala with ID ${id}:`, error);
     throw error;
   }
 };
 
 /**
- * Delete a room by ID
- * @param {number} id - Room ID
+ * Delete a sala by ID
+ * @param {number} id - Sala ID
  */
 export const deleteSala = async (id) => {
   try {
     await axiosInstance.delete(`/api/salas/${id}`);
   } catch (error) {
-    console.error(`Error deleting room with ID ${id}:`, error);
-    throw error;
-  }
-};
-
-/**
- * Bulk import rooms
- * @param {Array} salas - List of rooms to create
- * @returns {Promise<Array>} List of created rooms
- */
-export const bulkCreateSalas = async (salas) => {
-  try {
-    const response = await axiosInstance.post("/api/salas/importar", salas);
-    return response.data;
-  } catch (error) {
-    console.error("Error bulk creating rooms:", error);
+    console.error(`Error deleting sala with ID ${id}:`, error);
     throw error;
   }
 };

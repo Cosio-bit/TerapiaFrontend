@@ -3,12 +3,19 @@ import { Box, Button } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 
 const SalasTable = ({ salas, onEdit, onDelete }) => {
+  const rows = Array.isArray(salas) ? salas : [];
+
   return (
     <Box mt={3}>
       <DataGrid
-        rows={salas.map((sala) => ({
-          ...sala,
-          id: sala.id_sala,
+        rows={rows.map((sala) => ({
+          id: sala?.id_sala, // ✅ Ensure `id_sala` is set
+          nombre: sala?.nombre || "No especificado",
+          capacidad: sala?.capacidad || "No especificado",
+          precio: sala?.precio ? `$${sala.precio}` : "No especificado",
+          ubicacion: sala?.ubicacion || "No especificado",
+          estado: sala?.estado || "No especificado",
+          proveedor: sala?.proveedor?.usuario?.nombre || "No especificado", // ✅ Fetch the provider's name
         }))}
         columns={[
           { field: "nombre", headerName: "Nombre", flex: 1 },
@@ -16,7 +23,7 @@ const SalasTable = ({ salas, onEdit, onDelete }) => {
           { field: "precio", headerName: "Precio", flex: 1 },
           { field: "ubicacion", headerName: "Ubicación", flex: 1 },
           { field: "estado", headerName: "Estado", flex: 1 },
-          { field: "id_proveedor", headerName: "ID Proveedor", flex: 1 },
+          { field: "proveedor", headerName: "Proveedor", flex: 1 }, // ✅ Show provider's name
           {
             field: "actions",
             headerName: "Acciones",

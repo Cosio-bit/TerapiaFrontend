@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Box, Button, Snackbar, Alert, Typography } from "@mui/material";
-// Asegúrate de que los nombres de los imports sean consistentes con el archivo Axios y los métodos definidos allí.
-import { getAllArriendos, createArriendo, updateArriendo, deleteArriendo } from "../api/arriendoApi";
-import { getAllSalas } from "../api/salaApi"; // Consistencia en el nombre de la función
-import { getAllClientes } from "../api/clienteApi"; // Consistencia en el nombre de la función
+import {
+  fetchArriendos,
+  createArriendo,
+  updateArriendo,
+  deleteArriendo,
+} from "../api/arriendoApi";
+import { getAllSalas } from "../api/salaApi";
+import { getAllClientes } from "../api/clienteApi";
 import ArriendosTable from "../components/ArriendosTable";
 import ArriendoFormDialog from "../components/ArriendoFormDialog";
 
@@ -15,126 +19,138 @@ const Arriendos = () => {
   const [editing, setEditing] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
-  // Cargar datos al iniciar el componente
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        // Nombres de funciones consistentes con los archivos API
-        const [arriendosData, salasData, clientesData] = await Promise.all([
-          getAllArriendos(),
-          getAllSalas(),
-          getAllClientes(),
-        ]);
-        setArriendos(arriendosData);
-        setSalas(salasData);
-        setClientes(clientesData);
-      } catch (err) {
-        setError("Error al cargar los datos.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
+    fetchArriendosData();
+    fetchSalasData();
+    fetchClientesData();
   }, []);
 
-  // Guardar o actualizar un arriendo
+  const fetchArriendosData = async () => {
+    try {
+      const data = await fetchArriendos();
+      console.log("📤 API Response for Arriendos:", JSON.stringify(data, null, 2));
+
+      if (Array.isArray(data)) {
+        setArriendos(data);
+      } else {
+        console.error("❌ API returned unexpected data structure:", data);
+        setArriendos([]);
+      }
+    } catch (error) {
+      console.error("❌ Error fetching arriendos:", error);
+      setSnackbar({ open: true, message: "Error al cargar arriendos.", severity: "error" });
+    }
+  };
+
+  const fetchSalasData = async () => {
+    try {
+      const data = await getAllSalas();
+      setSalas(data || []);
+    } catch (error) {
+      console.error("❌ Error fetching salas:", error);
+      setSnackbar({ open: true, message: "Error al cargar salas.", severity: "error" });
+    }
+  };
+
+  const fetchClientesData = async () => {
+    try {
+      const data = await getAllClientes();
+      setClientes(data || []);
+    } catch (error) {
+      console.error("❌ Error fetching clientes:", error);
+      setSnackbar({ open: true, message: "Error al cargar clientes.", severity: "error" });
+    }
+  };
+
   const handleSaveArriendo = async (arriendo) => {
     try {
+      console.log("📤 Saving Arriendo:", JSON.stringify(arriendo, null, 2));
+
       if (editing) {
+        if (!currentArriendo?.id_arriendo) {
+          console.error("⚠️ No se puede actualizar, falta ID de Arriendo.");
+          setSnackbar({ open: true, message: "Error: No se puede actualizar, falta ID.", severity: "error" });
+          return;
+        }
+        console.log("🛠 Updating Arriendo with ID:", currentArriendo.id_arriendo);
         await updateArriendo(currentArriendo.id_arriendo, arriendo);
       } else {
+        console.log("🆕 Creating new Arriendo");
         await createArriendo(arriendo);
       }
-      setArriendos(await getAllArriendos());
+
+      fetchArriendosData();
       setOpenDialog(false);
       setSnackbar({
         open: true,
         message: editing ? "Arriendo actualizado con éxito." : "Arriendo creado con éxito.",
         severity: "success",
       });
-    } catch {
-      setSnackbar({
-        open: true,
-        message: "Error al guardar el arriendo.",
-        severity: "error",
-      });
+    } catch (error) {
+      console.error("❌ Error saving arriendo:", error);
+      setSnackbar({ open: true, message: "Error al guardar el arriendo.", severity: "error" });
     }
   };
 
-  // Editar un arriendo
   const handleEditArriendo = (arriendo) => {
+    console.log("✏️ Editing Arriendo:", JSON.stringify(arriendo, null, 2));
+
+    if (!arriendo.id && !arriendo.id_arriendo) {
+      console.error("⚠️ Error: No se encontró el ID de Arriendo.");
+      return;
+    }
+
+    const updatedArriendo = {
+      id_arriendo: arriendo.id_arriendo || arriendo.id,
+      sala: arriendo.sala ? arriendo.sala : {}, // ✅ Ensure sala is an object
+      cliente: arriendo.cliente ? arriendo.cliente : {}, // ✅ Ensure cliente is an object
+      fecha: arriendo.fecha || "",
+      hora_inicio: arriendo.hora_inicio || "",
+      hora_fin: arriendo.hora_fin || "",
+      estado: arriendo.estado || "active",
+      monto_pagado: typeof arriendo.monto_pagado === "string"
+        ? parseFloat(arriendo.monto_pagado.replace(/[^0-9.]/g, "")) || 0
+        : arriendo.monto_pagado || 0,
+    };
+
+    console.log("📝 Formulario cargado con datos (AFTER FIX):", JSON.stringify(updatedArriendo, null, 2));
+
+    setCurrentArriendo(updatedArriendo);
     setEditing(true);
-    setCurrentArriendo(arriendo);
-    setOpenDialog(true);
+
+    setTimeout(() => setOpenDialog(true), 100);
   };
 
-  // Eliminar un arriendo
   const handleDeleteArriendo = async (id) => {
     try {
       await deleteArriendo(id);
-      setArriendos(await getAllArriendos());
-      setSnackbar({
-        open: true,
-        message: "Arriendo eliminado con éxito.",
-        severity: "success",
-      });
-    } catch {
-      setSnackbar({
-        open: true,
-        message: "Error al eliminar el arriendo.",
-        severity: "error",
-      });
+      fetchArriendosData();
+      setSnackbar({ open: true, message: "Arriendo eliminado con éxito.", severity: "success" });
+    } catch (error) {
+      console.error("❌ Error deleting arriendo:", error);
+      setSnackbar({ open: true, message: "Error al eliminar el arriendo.", severity: "error" });
     }
   };
-
-  // Cerrar Snackbar
-  const handleCloseSnackbar = () => {
-    setSnackbar({ open: false, message: "", severity: "success" });
-  };
-
-  if (loading) {
-    return <Typography>Cargando...</Typography>;
-  }
-
-  if (error) {
-    return (
-      <Typography color="error" textAlign="center">
-        {error}
-      </Typography>
-    );
-  }
 
   return (
     <Box p={4}>
       <Typography variant="h4" gutterBottom>
         Gestión de Arriendos
       </Typography>
-      <Box mb={2}>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => {
-            setEditing(false);
-            setCurrentArriendo(null);
-            setOpenDialog(true);
-          }}
-        >
-          Crear Arriendo
-        </Button>
-      </Box>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={() => {
+          setEditing(false);
+          setCurrentArriendo(null);
+          setOpenDialog(true);
+        }}
+      >
+        Crear Arriendo
+      </Button>
 
-      <ArriendosTable
-        arriendos={arriendos}
-        salas={salas}
-        clientes={clientes}
-        onEdit={handleEditArriendo}
-        onDelete={handleDeleteArriendo}
-      />
+      <ArriendosTable arriendos={arriendos} onEdit={handleEditArriendo} onDelete={handleDeleteArriendo} />
 
       <ArriendoFormDialog
         open={openDialog}
@@ -144,14 +160,15 @@ const Arriendos = () => {
         salas={salas}
         clientes={clientes}
         editing={editing}
+        setSnackbar={setSnackbar}
       />
 
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
+        onClose={() => setSnackbar({ open: false, message: "", severity: "success" })}
       >
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity}>
+        <Alert onClose={() => setSnackbar({ open: false, message: "", severity: "success" })} severity={snackbar.severity}>
           {snackbar.message}
         </Alert>
       </Snackbar>

@@ -4,7 +4,7 @@ import axiosInstance from "./axiosConfig";
  * Fetch all purchases
  * @returns {Promise<Array>} List of purchases
  */
-export const getAllCompras = async () => {
+export const fetchCompras = async () => {
   try {
     const response = await axiosInstance.get("/api/compras");
     return response.data;
@@ -32,18 +32,15 @@ export const fetchCompraById = async (id) => {
 /**
  * Create a new purchase
  * @param {Object} compra - Purchase data
- * @param {boolean} usarSaldo - Whether to use client balance
  * @returns {Promise<Object>} Created purchase
  */
-export const createCompra = async (compra, usarSaldo = false) => {
+export const createCompra = async (compra) => {
   try {
-    const response = await axiosInstance.post("/api/compras", {
-      compra,
-      usarSaldo,
-    });
+    console.log("📤 Sending purchase data to backend:", JSON.stringify(compra, null, 2)); // 🐛 Debug request payload
+    const response = await axiosInstance.post("/api/compras", compra);
     return response.data;
   } catch (error) {
-    console.error("Error creating purchase:", error);
+    console.error("❌ Error creating purchase:", error.response?.data || error.message);
     throw error;
   }
 };

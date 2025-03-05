@@ -2,20 +2,23 @@ import React from "react";
 import { Box, Button } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 
-const ProductosCompradosTable = ({ productosComprados, onEdit, onDelete }) => {
+const ProductosCompradosTable = ({ productosComprados = [], onEdit, onDelete }) => {
+  const rows = Array.isArray(productosComprados)
+    ? productosComprados.map((productoComprado) => ({
+        ...productoComprado,
+        id: productoComprado.id_producto_comprado,
+        producto: productoComprado.producto?.nombre || "Desconocido",
+        cantidad: productoComprado.cantidad,
+      }))
+    : [];
+
   return (
     <Box mt={3}>
       <DataGrid
-        rows={productosComprados.map((producto) => ({
-          ...producto,
-          id: producto.id_productocomprado,
-        }))}
+        rows={rows}
         columns={[
-          { field: "nombre", headerName: "Nombre", flex: 1 },
-          { field: "precio", headerName: "Precio", flex: 1 },
+          { field: "producto", headerName: "Producto", flex: 1 },
           { field: "cantidad", headerName: "Cantidad", flex: 1 },
-          { field: "id_producto", headerName: "ID Producto", flex: 1 },
-          { field: "id_compra", headerName: "ID Compra", flex: 1 },
           {
             field: "actions",
             headerName: "Acciones",
