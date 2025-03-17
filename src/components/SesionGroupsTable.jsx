@@ -29,7 +29,7 @@ const SesionGroupsTable = ({ sesionGroups, onEdit, onDelete }) => {
                 <Box component="ul" sx={{ paddingLeft: "15px", margin: 0 }}>
                   {sesiones.map((sesion, index) => (
                     <Typography component="li" key={index} variant="body2">
-                      📅 {sesion.fecha_hora || "Sin fecha"} | 💰 {sesion.precio || "0"} | 🏷️ {sesion.estado || "Sin estado"} | 👨‍⚕️ {sesion.professional?.id_profesional ? `ID ${sesion.professional.id_profesional}` : "Sin asignar"}
+                      👨‍⚕️ {sesion.profesional.usuario.nombre || "Sin asignar"} | 📅 {sesion.fecha_hora || "Sin fecha"} | 💰 {sesion.precio || "0"} | 🏷️ {sesion.estado || "Sin estado"}
                     </Typography>
                   ))}
                 </Box>
