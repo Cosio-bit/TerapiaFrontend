@@ -12,6 +12,11 @@ import { fetchVariantes } from "../api/varianteApi";
 import SesionGroupsTable from "../components/SesionGroupsTable";
 import SesionGroupFormDialog from "../components/SesionGroupFormDialog";
 
+// ✅ Función de formateo numérico integrada directamente
+const formatNumber = (number) => {
+  return new Intl.NumberFormat('es-CL').format(number);
+};
+
 const SesionGroups = () => {
   const [sesionGroups, setSesionGroups] = useState([]);
   const [terapias, setTerapias] = useState([]);
@@ -32,9 +37,9 @@ const SesionGroups = () => {
   const fetchSesionGroupsData = async () => {
     try {
       const data = await fetchSesionGroups();
-      
-      console.log("📤 API Response for SesionGroups:", JSON.stringify(data, null, 2)); // ✅ Debug API response
-      
+
+      console.log("📤 API Response for SesionGroups:", JSON.stringify(data, null, 2));
+
       if (Array.isArray(data)) {
         setSesionGroups(data);
       } else {
@@ -46,7 +51,6 @@ const SesionGroups = () => {
       setSnackbar({ open: true, message: "Error al cargar los grupos de sesiones.", severity: "error" });
     }
   };
-  
 
   const fetchTerapiasData = async () => {
     try {
@@ -61,7 +65,7 @@ const SesionGroups = () => {
   const fetchClientesData = async () => {
     try {
       const data = await getAllClientes();
-      console.log("📤 API Response from /api/clientes:", JSON.stringify(data, null, 2)); // ✅ Debugging log
+      console.log("📤 API Response from /api/clientes:", JSON.stringify(data, null, 2));
 
       if (Array.isArray(data)) {
         setClientes(data);
@@ -87,64 +91,57 @@ const SesionGroups = () => {
 
   const handleSaveSesionGroup = async (sesionGroup) => {
     try {
-        console.log("📤 Saving SesionGroup:", JSON.stringify(sesionGroup, null, 2)); 
+      console.log("📤 Saving SesionGroup:", JSON.stringify(sesionGroup, null, 2));
 
-        if (editing) {
-            if (!currentSesionGroup?.id_sesion_group) {
-                console.error("⚠️ No se puede actualizar, falta ID de SesionGroup.");
-                setSnackbar({ open: true, message: "Error: No se puede actualizar, falta ID.", severity: "error" });
-                return;
-            }
-            console.log("🛠 Updating SesionGroup with ID:", currentSesionGroup.id_sesion_group);
-            await updateSesionGroup(currentSesionGroup.id_sesion_group, sesionGroup);
-        } else {
-            console.log("🆕 Creating new SesionGroup");
-            await createSesionGroup(sesionGroup);
+      if (editing) {
+        if (!currentSesionGroup?.id_sesion_group) {
+          console.error("⚠️ No se puede actualizar, falta ID de SesionGroup.");
+          setSnackbar({ open: true, message: "Error: No se puede actualizar, falta ID.", severity: "error" });
+          return;
         }
+        await updateSesionGroup(currentSesionGroup.id_sesion_group, sesionGroup);
+      } else {
+        await createSesionGroup(sesionGroup);
+      }
 
-        fetchSesionGroupsData();
-        setOpenDialog(false);
-        setSnackbar({
-            open: true,
-            message: editing ? "Grupo de sesiones actualizado con éxito." : "Grupo de sesiones creado con éxito.",
-            severity: "success",
-        });
+      fetchSesionGroupsData();
+      setOpenDialog(false);
+      setSnackbar({
+        open: true,
+        message: editing ? "Grupo de sesiones actualizado con éxito." : "Grupo de sesiones creado con éxito.",
+        severity: "success",
+      });
     } catch (error) {
-        console.error("❌ Error saving session group:", error);
-        setSnackbar({ open: true, message: "Error al guardar el grupo de sesiones.", severity: "error" });
+      console.error("❌ Error saving session group:", error);
+      setSnackbar({ open: true, message: "Error al guardar el grupo de sesiones.", severity: "error" });
     }
-};
-
-const handleEditSesionGroup = (sesionGroup) => {
-  console.log("✏️ Editing SesionGroup:", JSON.stringify(sesionGroup, null, 2));
-
-  if (!sesionGroup.id && !sesionGroup.id_sesion_group) {
-    console.error("⚠️ Error: No se encontró el ID de SesionGroup.");
-    return;
-  }
-
-  // ✅ Preserve `descripcion` properly
-  const updatedSesionGroup = {
-    id_sesion_group: sesionGroup.id_sesion_group || sesionGroup.id,
-    terapia: sesionGroup.terapia?.id_terapia || sesionGroup.terapia || "", 
-    cliente: sesionGroup.cliente?.id_cliente || sesionGroup.cliente || "",
-    variante: sesionGroup.variante?.id_variante || sesionGroup.variante || "",
-    descripcion: sesionGroup.descripcion ? sesionGroup.descripcion : "",  // 🔥 FIX HERE
-    sesiones: sesionGroup.sesiones?.map(sesion => ({
-      ...sesion,
-      profesional: sesion.profesional?.id_profesional || sesion.profesional || ""
-    })) || [],
   };
 
-  console.log("📝 Formulario cargado con datos (AFTER FIX):", JSON.stringify(updatedSesionGroup, null, 2));
+  const handleEditSesionGroup = (sesionGroup) => {
+    console.log("✏️ Editing SesionGroup:", JSON.stringify(sesionGroup, null, 2));
 
-  setCurrentSesionGroup(updatedSesionGroup);
-  setEditing(true);
+    if (!sesionGroup.id && !sesionGroup.id_sesion_group) {
+      console.error("⚠️ Error: No se encontró el ID de SesionGroup.");
+      return;
+    }
 
-  // ✅ Ensure state updates before opening the form
-  setTimeout(() => setOpenDialog(true), 100);
-};
+    const updatedSesionGroup = {
+      id_sesion_group: sesionGroup.id_sesion_group || sesionGroup.id,
+      terapia: sesionGroup.terapia?.id_terapia || sesionGroup.terapia || "",
+      cliente: sesionGroup.cliente?.id_cliente || sesionGroup.cliente || "",
+      variante: sesionGroup.variante?.id_variante || sesionGroup.variante || "",
+      descripcion: sesionGroup.descripcion ? sesionGroup.descripcion : "",
+      sesiones: sesionGroup.sesiones?.map(sesion => ({
+        ...sesion,
+        profesional: sesion.profesional?.id_profesional || sesion.profesional || ""
+      })) || [],
+    };
 
+    setCurrentSesionGroup(updatedSesionGroup);
+    setEditing(true);
+
+    setTimeout(() => setOpenDialog(true), 100);
+  };
 
   const handleDeleteSesionGroup = async (id) => {
     try {
@@ -174,7 +171,15 @@ const handleEditSesionGroup = (sesionGroup) => {
         Crear Grupo de Sesiones
       </Button>
 
-      <SesionGroupsTable sesionGroups={sesionGroups} onEdit={handleEditSesionGroup} onDelete={handleDeleteSesionGroup} />
+      <SesionGroupsTable
+        sesionGroups={sesionGroups.map(sg => ({
+          ...sg,
+          cantidad: sg.cantidad ? formatNumber(sg.cantidad) : sg.cantidad,
+          costo: sg.costo ? formatNumber(sg.costo) : sg.costo
+        }))}
+        onEdit={handleEditSesionGroup}
+        onDelete={handleDeleteSesionGroup}
+      />
 
       <SesionGroupFormDialog
         open={openDialog}
@@ -185,7 +190,7 @@ const handleEditSesionGroup = (sesionGroup) => {
         clientes={clientes}
         variantes={variantes}
         editing={editing}
-        setSnackbar={setSnackbar} // ✅ Ensures notifications work correctly
+        setSnackbar={setSnackbar}
       />
 
       <Snackbar

@@ -11,21 +11,23 @@ import {
   Select,
   MenuItem,
   IconButton,
+  Typography,
+  Box
 } from "@mui/material";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { getAllProfesionales } from "../api/profesionalApi";
 
-const SesionGroupFormDialog = ({ 
-  open, 
-  onClose, 
-  onSave, 
-  sesionGroup, 
-  terapias, 
-  clientes, 
-  variantes, 
+const SesionGroupFormDialog = ({
+  open,
+  onClose,
+  onSave,
+  sesionGroup,
+  terapias,
+  clientes,
+  variantes,
   editing,
-  setSnackbar
+  setSnackbar,
 }) => {
   const [formSesionGroup, setFormSesionGroup] = useState({
     terapia: "",
@@ -35,45 +37,38 @@ const SesionGroupFormDialog = ({
     sesiones: [],
   });
 
+  const estadoOpciones = [
+    "Pagado y Realizado",
+    "Pagado y No Realizado",
+    "No Pagado y Realizado",
+    "No Pagado y No Realizado"
+  ];
+
   const [profesionales, setProfesionales] = useState([]);
 
   useEffect(() => {
-    console.log("Fetching profesionales...");
     getAllProfesionales()
-      .then(data => {
-        console.log("Profesionales fetched:", data);
-        setProfesionales(data);
-      })
-      .catch((error) => {
-        console.error("Error fetching profesionales:", error);
-        setProfesionales([]);
-      });
+      .then(data => setProfesionales(data))
+      .catch(() => setProfesionales([]));
   }, []);
 
   const handleOpenDialog = () => {
     if (sesionGroup?.id_sesion_group) {
-      console.log("✅ Opening dialog with sesionGroup:", sesionGroup);
-  
       const terapiaId = terapias.find(t => t.nombre === sesionGroup.terapia)?.id_terapia || "";
       const clienteId = clientes.find(c => c.usuario.nombre === sesionGroup.cliente)?.id_cliente || "";
       const varianteId = variantes.find(v => v.nombre === sesionGroup.variante)?.id_variante || "";
-  
-      console.log("🔍 Before setting state, original descripción:", sesionGroup.descripcion);
-  
+
       const updatedState = {
         terapia: terapiaId,
         cliente: clienteId,
         variante: varianteId,
-        descripcion: sesionGroup.descripcion !== undefined ? sesionGroup.descripcion : "⚠️ Sin descripción",
+        descripcion: sesionGroup.descripcion ?? "⚠️ Sin descripción",
         sesiones: sesionGroup.sesiones ? [...sesionGroup.sesiones] : [],
       };
-  
-      console.log("🛠️ After processing, updatedState.descripcion:", updatedState.descripcion);
-  
+
       setFormSesionGroup(updatedState);
     }
   };
-  
 
   useEffect(() => {
     if (open) {
@@ -82,9 +77,7 @@ const SesionGroupFormDialog = ({
   }, [open]);
 
   const handleSave = async () => {
-    console.log("Saving session group:", formSesionGroup);
     if (!formSesionGroup.terapia || !formSesionGroup.cliente || !formSesionGroup.variante || !formSesionGroup.descripcion) {
-      console.warn("Validation failed: missing required fields.");
       setSnackbar({ open: true, message: "Complete todos los campos obligatorios.", severity: "error" });
       return;
     }
@@ -102,50 +95,39 @@ const SesionGroupFormDialog = ({
       })),
     };
 
-    console.log("Payload to send:", payload);
-
     try {
       await onSave(payload);
-      console.log("Session group saved successfully.");
       setSnackbar({ open: true, message: "Grupo de sesiones guardado con éxito.", severity: "success" });
       onClose();
     } catch (error) {
-      console.error("Error saving session group:", error);
       setSnackbar({ open: true, message: "Error al guardar el grupo de sesiones.", severity: "error" });
     }
   };
 
   const handleAddSesion = () => {
-    console.log("Adding new session...");
-    setFormSesionGroup(prevState => ({
-      ...prevState,
-      sesiones: [...prevState.sesiones, { fecha_hora: "", precio: "", estado: "", profesional: "" }],
+    setFormSesionGroup(prev => ({
+      ...prev,
+      sesiones: [...prev.sesiones, { fecha_hora: "", precio: "", estado: "", profesional: "" }],
     }));
   };
 
   const handleSesionChange = (index, field, value) => {
-    console.log(`Updating session at index ${index}:`, field, value);
-    const updatedSesiones = [...formSesionGroup.sesiones];
-    updatedSesiones[index][field] = value;
-    setFormSesionGroup({ ...formSesionGroup, sesiones: updatedSesiones });
+    const updated = [...formSesionGroup.sesiones];
+    updated[index][field] = value;
+    setFormSesionGroup({ ...formSesionGroup, sesiones: updated });
   };
 
   const handleDeleteSesion = (index) => {
-    console.log(`Deleting session at index ${index}`);
-    const updatedSesiones = [...formSesionGroup.sesiones];
-    updatedSesiones.splice(index, 1);
-    setFormSesionGroup({ ...formSesionGroup, sesiones: updatedSesiones });
+    const updated = [...formSesionGroup.sesiones];
+    updated.splice(index, 1);
+    setFormSesionGroup({ ...formSesionGroup, sesiones: updated });
   };
 
-  useEffect(() => {
-    console.log("📌 Form state right before rendering:", formSesionGroup);
-  }, [formSesionGroup]);
-  
   return (
-    <Dialog open={open} onClose={onClose}>
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>{editing ? "Editar Grupo de Sesiones" : "Crear Grupo de Sesiones"}</DialogTitle>
       <DialogContent>
-        {/* Terapia Selection */}
+
         <FormControl fullWidth margin="dense">
           <InputLabel>Terapia</InputLabel>
           <Select
@@ -160,22 +142,21 @@ const SesionGroupFormDialog = ({
           </Select>
         </FormControl>
 
-        {/* Variante Selection */}
         <FormControl fullWidth margin="dense">
           <InputLabel>Variante</InputLabel>
           <Select
             value={formSesionGroup.variante}
             onChange={(e) => setFormSesionGroup({ ...formSesionGroup, variante: e.target.value })}
+            disabled={!formSesionGroup.terapia}
           >
-            {variantes.map((variante) => (
-              <MenuItem key={variante.id_variante} value={variante.id_variante}>
-                {variante.nombre}
+            {terapias.find(t => t.id_terapia === formSesionGroup.terapia)?.variantes?.map((v) => (
+              <MenuItem key={v.id_variante} value={v.id_variante}>
+                {v.nombre}
               </MenuItem>
-            ))}
+            )) || []}
           </Select>
         </FormControl>
 
-        {/* Cliente Selection */}
         <FormControl fullWidth margin="dense">
           <InputLabel>Cliente</InputLabel>
           <Select
@@ -190,48 +171,104 @@ const SesionGroupFormDialog = ({
           </Select>
         </FormControl>
 
-        {/* Descripción */}
         <TextField
-  margin="dense"
-  label="Descripción"
-  fullWidth
-  multiline
-  value={formSesionGroup.descripcion}
-  onChange={(e) => {
-    console.log("🔍 Updating descripción:", e.target.value); // <-- Debugging log
-    setFormSesionGroup({ ...formSesionGroup, descripcion: e.target.value });
-  }}
-/>
-
+          margin="dense"
+          label="Descripción"
+          fullWidth
+          multiline
+          value={formSesionGroup.descripcion}
+          onChange={(e) => setFormSesionGroup({ ...formSesionGroup, descripcion: e.target.value })}
+        />
 
         {/* Sesiones Management */}
         <div>
-          <h4>Sesiones</h4>
+          <Typography variant="h6" gutterBottom>
+            Sesiones
+          </Typography>
+
           {formSesionGroup.sesiones.map((sesion, index) => (
-            <div key={index} style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
-              <TextField label="Fecha y Hora" type="datetime-local" value={sesion.fecha_hora} onChange={(e) => handleSesionChange(index, "fecha_hora", e.target.value)} />
-              <TextField label="Precio" type="number" value={sesion.precio} onChange={(e) => handleSesionChange(index, "precio", e.target.value)} />
-              <TextField label="Estado" value={sesion.estado} onChange={(e) => handleSesionChange(index, "estado", e.target.value)} />
+            <Box
+              key={index}
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 2,
+                border: "1px solid #ccc",
+                borderRadius: 2,
+                p: 2,
+                mb: 2,
+                backgroundColor: "#f5f5f5",
+              }}
+            >
+              <Typography variant="subtitle2">Sesión #{index + 1}</Typography>
+
+              <TextField
+                fullWidth
+                label="Fecha y Hora"
+                type="datetime-local"
+                value={sesion.fecha_hora}
+                onChange={(e) => handleSesionChange(index, "fecha_hora", e.target.value)}
+              />
+
+              <TextField
+                fullWidth
+                label="Precio"
+                type="number"
+                value={sesion.precio}
+                onChange={(e) => handleSesionChange(index, "precio", e.target.value)}
+              />
+
               <FormControl fullWidth>
-                <InputLabel>Profesional</InputLabel>
-                <Select value={sesion.profesional || ""} onChange={(e) => handleSesionChange(index, "profesional", e.target.value)}>
-                  {profesionales.map((profesional) => (
-                    <MenuItem key={profesional.id_profesional} value={profesional.id_profesional}>
-                      {profesional.usuario.nombre}
+                <InputLabel>Estado</InputLabel>
+                <Select
+                  value={sesion.estado || ""}
+                  onChange={(e) => handleSesionChange(index, "estado", e.target.value)}
+                  label="Estado"
+                >
+                  {estadoOpciones.map((opcion) => (
+                    <MenuItem key={opcion} value={opcion}>
+                      {opcion}
                     </MenuItem>
                   ))}
                 </Select>
               </FormControl>
-              <IconButton onClick={() => handleDeleteSesion(index)} color="error">
-                <DeleteIcon />
-              </IconButton>
-            </div>
+
+              <FormControl fullWidth>
+                <InputLabel>Profesional</InputLabel>
+                <Select
+                  value={sesion.profesional || ""}
+                  onChange={(e) => handleSesionChange(index, "profesional", e.target.value)}
+                  disabled={!formSesionGroup.terapia}
+                  label="Profesional"
+                >
+                  {terapias
+                    .find((t) => t.id_terapia === formSesionGroup.terapia)
+                    ?.profesionales?.map((profesional) => (
+                      <MenuItem key={profesional.id_profesional} value={profesional.id_profesional}>
+                        {profesional.usuario.nombre}
+                      </MenuItem>
+                    )) || []}
+                </Select>
+              </FormControl>
+
+              <Box textAlign="right">
+                <IconButton onClick={() => handleDeleteSesion(index)} color="error">
+                  <DeleteIcon />
+                </IconButton>
+              </Box>
+            </Box>
           ))}
-          <Button startIcon={<AddCircleOutlineIcon />} onClick={handleAddSesion} variant="outlined">
+
+          <Button
+            startIcon={<AddCircleOutlineIcon />}
+            onClick={handleAddSesion}
+            variant="outlined"
+          >
             Agregar Sesión
           </Button>
         </div>
       </DialogContent>
+
       <DialogActions>
         <Button onClick={onClose}>Cancelar</Button>
         <Button onClick={handleSave} variant="contained" color="primary">

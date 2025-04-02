@@ -61,9 +61,9 @@ const Sesiones = () => {
   return (
     <Box p={4}>
       <Typography variant="h4" gutterBottom>Gestión de Sesiones</Typography>
-      <Button variant="contained" color="primary" onClick={() => { setEditing(false); setCurrentSesion(null); setOpenDialog(true); }}>
+      {/*<Button variant="contained" color="primary" onClick={() => { setEditing(false); setCurrentSesion(null); setOpenDialog(true); }}>
         Crear Sesión
-      </Button>
+      </Button>*/}
       <SesionesTable sesiones={sesiones} onEdit={handleEditSesion} onDelete={handleDeleteSesion} />
       <SesionFormDialog open={openDialog} onClose={() => setOpenDialog(false)} onSave={handleSaveSesion} sesion={currentSesion} profesionales={profesionales} editing={editing} />
     </Box>

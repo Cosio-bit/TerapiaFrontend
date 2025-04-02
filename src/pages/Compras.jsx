@@ -30,10 +30,8 @@ const Compras = () => {
   const fetchComprasData = async () => {
     try {
       const data = await fetchCompras();
-      console.log("📤 API Response for Compras:", JSON.stringify(data, null, 2));
       setCompras(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error("❌ Error fetching purchases:", error);
       setSnackbar({ open: true, message: "Error al cargar las compras.", severity: "error" });
     }
   };
@@ -41,36 +39,28 @@ const Compras = () => {
   const fetchClientesData = async () => {
     try {
       const data = await getAllClientes();
-      console.log("📌 Fetched Clientes from API:", JSON.stringify(data, null, 2));
-  
-      if (Array.isArray(data) && data.length > 0) {
-        setClientes(data);
-      } else {
-        console.warn("⚠️ API returned an empty client list");
-        setClientes([]);
-      }
+      setClientes(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error("❌ Error fetching clientes:", error);
       setSnackbar({ open: true, message: "Error al cargar clientes.", severity: "error" });
     }
   };
-  
 
   const fetchProductosData = async () => {
     try {
       const data = await getAllProductos();
       setProductos(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error("❌ Error fetching productos:", error);
       setSnackbar({ open: true, message: "Error al cargar productos.", severity: "error" });
     }
   };
 
   const handleSaveCompra = async (compra) => {
     try {
-      console.log("📤 Saving Compra:", JSON.stringify(compra, null, 2));
-
       if (editing) {
+        if (!currentCompra?.id_compra) {
+          setSnackbar({ open: true, message: "Error: No se puede actualizar sin ID", severity: "error" });
+          return;
+        }
         await updateCompra(currentCompra.id_compra, compra);
       } else {
         await createCompra(compra);
@@ -78,64 +68,42 @@ const Compras = () => {
 
       fetchComprasData();
       setOpenDialog(false);
-      setSnackbar({
-        open: true,
-        message: editing ? "Compra actualizada con éxito." : "Compra creada con éxito.",
-        severity: "success",
-      });
+      setSnackbar({ open: true, message: editing ? "Compra actualizada con éxito." : "Compra creada con éxito.", severity: "success" });
     } catch (error) {
-      console.error("❌ Error saving purchase:", error);
       setSnackbar({ open: true, message: "Error al guardar la compra.", severity: "error" });
     }
   };
-  const handleEditCompra = async (compra) => {
-    console.log("✏️ Editing Compra (Raw Data):", JSON.stringify(compra, null, 2));
-  
-    // Ensure `cliente` is an object, not a string
-    let clienteSeleccionado = { id_cliente: "" };
-  
-    if (typeof compra.cliente === "string") {
-      console.warn("⚠️ Cliente is a string, trying to match with clientes list...");
-      const matchedCliente = clientes.find((c) => c.usuario.nombre === compra.cliente);
-      if (matchedCliente) {
-        clienteSeleccionado = { id_cliente: matchedCliente.id_cliente };
-      } else {
-        console.error("❌ No matching cliente found for:", compra.cliente);
-      }
-    } else if (compra.cliente?.id_cliente) {
-      clienteSeleccionado = { id_cliente: compra.cliente.id_cliente };
-    }
-  
-    console.log("👉 Cliente seleccionado (Structured Object):", clienteSeleccionado);
-  
+
+  const handleEditCompra = (compra) => {
+    const clienteEstructurado = typeof compra.cliente === "string"
+      ? clientes.find((c) => c.usuario.nombre === compra.cliente) || { id_cliente: "" }
+      : compra.cliente;
+
+    const parsedDate = dayjs(compra.fecha, ["DD/MM/YYYY HH:mm", "YYYY-MM-DDTHH:mm:ss", "YYYY-MM-DDTHH:mm"]);
+    const fechaValida = parsedDate.isValid() ? parsedDate.format("YYYY-MM-DDTHH:mm") : dayjs().format("YYYY-MM-DDTHH:mm");
+
     const updatedCompra = {
-      id_compra: compra.id_compra,
-      cliente: clienteSeleccionado, // ✅ Ensure it's an object
-      fecha: compra.fecha ? dayjs(compra.fecha).format("YYYY-MM-DDTHH:mm") : "",
-      productosComprados: compra.productosComprados?.map(prod => ({
+      id_compra: compra.id_compra ?? compra.id ?? null,
+      cliente: clienteEstructurado && clienteEstructurado.id_cliente ? { id_cliente: clienteEstructurado.id_cliente } : { id_cliente: "" },
+      fecha: fechaValida,
+      productosComprados: Array.isArray(compra.productosComprados) ? compra.productosComprados.map(prod => ({
         id_producto_comprado: prod.id_producto_comprado || null,
         producto: { id_producto: prod.producto?.id_producto || null },
         cantidad: prod.cantidad || 1,
-      })) || [],
+      })) : [],
     };
-  
-    console.log("📝 Formulario cargado con datos (AFTER FIX):", JSON.stringify(updatedCompra, null, 2));
-  
+
     setCurrentCompra(updatedCompra);
     setEditing(true);
     setTimeout(() => setOpenDialog(true), 100);
   };
-  
-  
-  
-  
+
   const handleDeleteCompra = async (id) => {
     try {
       await deleteCompra(id);
       fetchComprasData();
       setSnackbar({ open: true, message: "Compra eliminada con éxito.", severity: "success" });
     } catch (error) {
-      console.error("❌ Error deleting purchase:", error);
       setSnackbar({ open: true, message: "Error al eliminar la compra.", severity: "error" });
     }
   };

@@ -83,3 +83,18 @@ export const deleteArriendo = async (id) => {
     throw error;
   }
 };
+
+/**
+ * Fetch arriendos filtrados por id_cliente
+ * @param {number} idCliente
+ * @returns {Promise<Array>} Lista de arriendos
+ */
+export const fetchArriendosByCliente = async (idCliente) => {
+  try {
+    const response = await axiosInstance.get(`/api/arriendos/cliente/${idCliente}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching arriendos por cliente:", error);
+    return [];
+  }
+};

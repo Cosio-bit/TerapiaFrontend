@@ -98,14 +98,17 @@ const Profesionales = () => {
 
       <ProfesionalesTable profesionales={profesionales} onEdit={handleEditProfesional} onDelete={handleDeleteProfesional} />
 
-      <ProfesionalFormDialog 
-        open={openDialog} 
-        onClose={() => setOpenDialog(false)} 
-        onSave={handleSaveProfesional} 
-        profesional={currentProfesional} 
-        usuarios={usuarios} // Pass usuarios to the form
-        editing={editing} 
-      />
+      <ProfesionalFormDialog
+  open={openDialog}
+  onClose={() => setOpenDialog(false)}
+  onSave={handleSaveProfesional} // ✅ CORREGIDO
+  profesional={currentProfesional}
+  usuarios={usuarios}
+  setUsuarios={setUsuarios}      // ✅ NECESARIO PARA AGREGAR EL NUEVO USUARIO
+  editing={editing}
+/>
+
+
 
       <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={() => setSnackbar({ open: false, message: "", severity: "success" })}>
         <Alert onClose={() => setSnackbar({ open: false, message: "", severity: "success" })} severity={snackbar.severity}>

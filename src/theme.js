@@ -1,34 +1,30 @@
-import { createTheme } from '@mui/material/styles';
+import { createTheme } from '@mui/material/styles'
 
 const createCustomTheme = (backgroundImage) => {
-  const link = document.createElement('link');
-  link.href = 'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap';
-  link.rel = 'stylesheet';
-  document.head.appendChild(link);
+  const link = document.createElement('link')
+  link.href = 'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap'
+  link.rel = 'stylesheet'
+  document.head.appendChild(link)
 
   return createTheme({
     palette: {
-      primary: {
-        main: '#C0E7B8', // Mint Green
-      },
-      secondary: {
-        main: '#F7C1B2', // Peach Pink
-      },
+      primary: { main: '#C0E7B8' },
+      secondary: { main: '#F7C1B2' },
       background: {
-        default: '#FFEBD4', // Warm Beige
-        paper: '#FFFFFF', // For cards and containers
+        default: '#FFEBD4',
+        paper: '#FFFFFF',
       },
       text: {
-        primary: '#333', // Dark Gray
-        secondary: '#555', // Softer Gray
+        primary: '#333',
+        secondary: '#555',
       },
     },
     typography: {
       fontFamily: '"Montserrat", sans-serif',
-      h1: { fontSize: '5rem', fontWeight: 700, color: '#333' }, // Quadrupled size
-      h2: { fontSize: '5rem', fontWeight: 600, color: '#444' }, // Quadrupled size
-      body1: { fontSize: '1.2rem', lineHeight: 1.6, color: '#555' }, // Quadrupled size
-      button: { fontSize: '1.3rem', fontWeight: 500 }, // Increased font size for buttons
+      h1: { fontSize: '3rem', fontWeight: 700, color: '#333' },
+      h2: { fontSize: '2.5rem', fontWeight: 600, color: '#444' },
+      body1: { fontSize: '1rem', lineHeight: 1.6, color: '#555' },
+      button: { fontSize: '1rem', fontWeight: 500 },
     },
     components: {
       MuiCssBaseline: {
@@ -42,6 +38,10 @@ const createCustomTheme = (backgroundImage) => {
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
+            minHeight: '100vh',
+            width: '100%',
+            boxSizing: 'border-box',
+            overflowX: 'hidden',
           },
           '#overlay': {
             position: 'absolute',
@@ -49,21 +49,21 @@ const createCustomTheme = (backgroundImage) => {
             left: 0,
             width: '100%',
             height: '100%',
-            backgroundColor: 'rgba(255, 255, 255, 0.8)', // Transparent white overlay
-            zIndex: 1, // Ensures it's between the background and content
+            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            zIndex: 1,
           },
           '.MuiButton-root': {
-            fontSize: '3rem', // Increased font size for all buttons
+            fontSize: '1rem',
           },
           '.MuiTypography-h6': {
-            fontSize: '4rem', // Increased font size for navbar title
+            fontSize: '1.2rem',
             fontWeight: 700,
             fontFamily: '"Montserrat", sans-serif',
           },
         },
       },
     },
-  });
-};
+  })
+}
 
-export default createCustomTheme;
+export default createCustomTheme

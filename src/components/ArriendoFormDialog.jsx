@@ -168,16 +168,18 @@ const ArriendoFormDialog = ({
 
         {/* Estado */}
         <FormControl fullWidth margin="dense">
-          <InputLabel>Estado</InputLabel>
-          <Select
-            value={formArriendo.estado}
-            onChange={(e) => setFormArriendo({ ...formArriendo, estado: e.target.value })}
-          >
-            <MenuItem value="active">Activo</MenuItem>
-            <MenuItem value="completed">Completado</MenuItem>
-            <MenuItem value="canceled">Cancelado</MenuItem>
-          </Select>
-        </FormControl>
+  <InputLabel>Estado</InputLabel>
+  <Select
+    value={formArriendo.estado}
+    onChange={(e) => setFormArriendo({ ...formArriendo, estado: e.target.value })}
+  >
+    <MenuItem value="Pagado y Realizado">Pagado y Realizado</MenuItem>
+    <MenuItem value="Pagado y No Realizado">Pagado y No Realizado</MenuItem>
+    <MenuItem value="No Pagado y Realizado">No Pagado y Realizado</MenuItem>
+    <MenuItem value="No Pagado y No Realizado">No Pagado y No Realizado</MenuItem>
+  </Select>
+</FormControl>
+
 
         {/* Monto Pagado */}
         <TextField

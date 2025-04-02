@@ -147,7 +147,7 @@ const ProductosComprados = () => {
       <Typography variant="h4" gutterBottom>
         Gestión de Productos Comprados
       </Typography>
-      <Button
+      {/*<Button
         variant="contained"
         color="primary"
         onClick={() => {
@@ -157,7 +157,7 @@ const ProductosComprados = () => {
         }}
       >
         Crear Producto Comprado
-      </Button>
+      </Button>*/}
 
       <ProductosCompradosTable
         productosComprados={productosComprados}

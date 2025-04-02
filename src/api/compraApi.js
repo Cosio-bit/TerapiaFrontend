@@ -53,13 +53,15 @@ export const createCompra = async (compra) => {
  */
 export const updateCompra = async (id, compra) => {
   try {
+    console.log(`🛠 Actualizando compra con ID: ${id}`);
     const response = await axiosInstance.put(`/api/compras/${id}`, compra);
     return response.data;
   } catch (error) {
-    console.error(`Error updating purchase with ID ${id}:`, error);
+    console.error(`❌ Error actualizando compra con ID ${id}:`, error);
     throw error;
   }
 };
+
 
 /**
  * Delete a purchase by ID

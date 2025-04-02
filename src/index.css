@@ -1,7 +1,7 @@
 :root {
-  font-family: 'Montserrat', system-ui, Avenir, Helvetica, Arial, sans-serif; /* Cambiar a Montserrat */
-  line-height: 1.8; /* Incrementar la altura de línea */
-  font-weight: 400; /* Mantener el peso regular */
+  font-family: 'Montserrat', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.6;
+  font-weight: 400;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -11,12 +11,15 @@
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
+  padding: 0;
   min-width: 320px;
   min-height: 100vh;
 
-  font-size: 1.2rem; /* Aumentar el tamaño de la fuente base */
-  line-height: 1.8; /* Mejorar la legibilidad */
-  font-family: 'Montserrat', sans-serif; /* Usar Montserrat */
+  font-size: 1.1rem;
+  line-height: 1.7;
+  font-family: 'Montserrat', sans-serif;
+
+  /* ❌ Elimina display: flex y place-items: center */
+  display: block;
+  box-sizing: border-box;
 }

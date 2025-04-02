@@ -100,7 +100,7 @@ const FichasSalud = () => {
       <Typography variant="h4" gutterBottom>
         Gestión de Fichas de Salud
       </Typography>
-      <Button
+      {/*<Button
         variant="contained"
         color="primary"
         onClick={() => {
@@ -110,7 +110,7 @@ const FichasSalud = () => {
         }}
       >
         Crear Ficha
-      </Button>
+      </Button>*/}
 
       <FichasSaludTable
         fichasSalud={fichasSalud}

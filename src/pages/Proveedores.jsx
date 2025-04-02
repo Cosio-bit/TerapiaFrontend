@@ -117,14 +117,16 @@ const Proveedores = () => {
         onDelete={handleDeleteProveedor}
       />
 
-      <ProveedorFormDialog
-        open={openDialog}
-        onClose={() => setOpenDialog(false)}
-        onSave={handleSaveProveedor}
-        proveedor={currentProveedor}
-        usuarios={usuarios} // Aquí pasamos la lista de usuarios
-        editing={editing}
-      />
+<ProveedorFormDialog
+  open={openDialog}
+  onClose={() => setOpenDialog(false)}
+  onSave={handleSaveProveedor}
+  proveedor={currentProveedor}
+  usuarios={usuarios}
+  setUsuarios={setUsuarios} // ✅ necesario
+  editing={editing}
+/>
+
 
       <Snackbar
         open={snackbar.open}

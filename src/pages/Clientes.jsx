@@ -90,7 +90,25 @@ const Clientes = () => {
 
       <ClientesTable clientes={clientes} onEdit={handleEditCliente} onDelete={handleDeleteCliente} />
 
-      <ClienteFormDialog open={openDialog} onClose={() => setOpenDialog(false)} onSave={handleSaveCliente} cliente={currentCliente} usuarios={usuarios} editing={editing} />
+      <ClienteFormDialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        onSave={handleSaveCliente}
+        cliente={currentCliente}
+        usuarios={usuarios}
+        setUsuarios={setUsuarios}  // ✅ AHORA SÍ ESTÁ CORRECTAMENTE PASADO
+        editing={editing}
+      />
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+      >
+        <Alert severity={snackbar.severity} onClose={() => setSnackbar({ ...snackbar, open: false })}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
