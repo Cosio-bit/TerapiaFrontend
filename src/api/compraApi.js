@@ -6,7 +6,7 @@ import axiosInstance from "./axiosConfig";
  */
 export const fetchCompras = async () => {
   try {
-    const response = await axiosInstance.get("/api/compras");
+    const response = await axiosInstance.get("/compras");
     return response.data;
   } catch (error) {
     console.error("Error fetching purchases:", error);
@@ -21,7 +21,7 @@ export const fetchCompras = async () => {
  */
 export const fetchCompraById = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/compras/${id}`);
+    const response = await axiosInstance.get(`/compras/${id}`);
     return response.data;
   } catch (error) {
     console.error(`Error fetching purchase with ID ${id}:`, error);
@@ -37,7 +37,7 @@ export const fetchCompraById = async (id) => {
 export const createCompra = async (compra) => {
   try {
     console.log("📤 Sending purchase data to backend:", JSON.stringify(compra, null, 2)); // 🐛 Debug request payload
-    const response = await axiosInstance.post("/api/compras", compra);
+    const response = await axiosInstance.post("/compras", compra);
     return response.data;
   } catch (error) {
     console.error("❌ Error creating purchase:", error.response?.data || error.message);
@@ -54,7 +54,7 @@ export const createCompra = async (compra) => {
 export const updateCompra = async (id, compra) => {
   try {
     console.log(`🛠 Actualizando compra con ID: ${id}`);
-    const response = await axiosInstance.put(`/api/compras/${id}`, compra);
+    const response = await axiosInstance.put(`/compras/${id}`, compra);
     return response.data;
   } catch (error) {
     console.error(`❌ Error actualizando compra con ID ${id}:`, error);
@@ -69,7 +69,7 @@ export const updateCompra = async (id, compra) => {
  */
 export const deleteCompra = async (id) => {
   try {
-    await axiosInstance.delete(`/api/compras/${id}`);
+    await axiosInstance.delete(`/compras/${id}`);
   } catch (error) {
     console.error(`Error deleting purchase with ID ${id}:`, error);
     throw error;
@@ -83,7 +83,7 @@ export const deleteCompra = async (id) => {
  */
 export const bulkCreateCompras = async (compras) => {
   try {
-    const response = await axiosInstance.post("/api/compras/importar", compras);
+    const response = await axiosInstance.post("/compras/importar", compras);
     return response.data;
   } catch (error) {
     console.error("Error bulk creating purchases:", error);

@@ -6,7 +6,7 @@ import axiosInstance from "./axiosConfig";
  */
 export const fetchSalas = async () => {
   try {
-    const response = await axiosInstance.get("/api/salas");
+    const response = await axiosInstance.get("/salas");
     return response.data;
   } catch (error) {
     console.error("Error fetching salas:", error);
@@ -16,7 +16,7 @@ export const fetchSalas = async () => {
 
 export const getAllSalas = async () => {
   try {
-    const response = await axiosInstance.get("/api/salas");
+    const response = await axiosInstance.get("/salas");
     return response.data;
   } catch (error) {
     console.error("Error fetching salas:", error);
@@ -31,7 +31,7 @@ export const getAllSalas = async () => {
  */
 export const fetchSalaById = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/salas/${id}`);
+    const response = await axiosInstance.get(`/salas/${id}`);
     return response.data;
   } catch (error) {
     console.error(`Error fetching sala with ID ${id}:`, error);
@@ -47,7 +47,7 @@ export const fetchSalaById = async (id) => {
 export const createSala = async (sala) => {
   try {
     console.log("📤 Sending data to backend:", JSON.stringify(sala, null, 2)); // 🐛 Debug request payload
-    const response = await axiosInstance.post("/api/salas", sala);
+    const response = await axiosInstance.post("/salas", sala);
     return response.data;
   } catch (error) {
     console.error("❌ Error creating sala:", error.response?.data || error.message);
@@ -63,7 +63,7 @@ export const createSala = async (sala) => {
  */
 export const updateSala = async (id, sala) => {
   try {
-    const response = await axiosInstance.put(`/api/salas/${id}`, sala);
+    const response = await axiosInstance.put(`/salas/${id}`, sala);
     return response.data;
   } catch (error) {
     console.error(`Error updating sala with ID ${id}:`, error);
@@ -77,7 +77,7 @@ export const updateSala = async (id, sala) => {
  */
 export const deleteSala = async (id) => {
   try {
-    await axiosInstance.delete(`/api/salas/${id}`);
+    await axiosInstance.delete(`/salas/${id}`);
   } catch (error) {
     console.error(`Error deleting sala with ID ${id}:`, error);
     throw error;

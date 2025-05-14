@@ -6,7 +6,7 @@ import axiosInstance from "./axiosConfig";
  */
 export const fetchSesionGroups = async () => {
   try {
-    const response = await axiosInstance.get("/api/sesion-groups");
+    const response = await axiosInstance.get("/sesion-groups");
     return response.data;
   } catch (error) {
     console.error("Error fetching session groups:", error);
@@ -21,7 +21,7 @@ export const fetchSesionGroups = async () => {
  */
 export const fetchSesionGroupById = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/sesion-groups/${id}`);
+    const response = await axiosInstance.get(`/sesion-groups/${id}`);
     return response.data;
   } catch (error) {
     console.error(`Error fetching session group with ID ${id}:`, error);
@@ -37,7 +37,7 @@ export const fetchSesionGroupById = async (id) => {
 export const createSesionGroup = async (sesionGroup) => {
   try {
     console.log("📤 Sending data to backend:", JSON.stringify(sesionGroup, null, 2)); // 🐛 Debug request payload
-    const response = await axiosInstance.post("/api/sesion-groups", sesionGroup);
+    const response = await axiosInstance.post("/sesion-groups", sesionGroup);
     return response.data;
   } catch (error) {
     console.error("❌ Error creating session group:", error.response?.data || error.message);
@@ -54,7 +54,7 @@ export const createSesionGroup = async (sesionGroup) => {
  */
 export const updateSesionGroup = async (id, sesionGroup) => {
   try {
-    const response = await axiosInstance.put(`/api/sesion-groups/${id}`, sesionGroup);
+    const response = await axiosInstance.put(`/sesion-groups/${id}`, sesionGroup);
     return response.data;
   } catch (error) {
     console.error(`Error updating session group with ID ${id}:`, error);
@@ -68,7 +68,7 @@ export const updateSesionGroup = async (id, sesionGroup) => {
  */
 export const deleteSesionGroup = async (id) => {
   try {
-    await axiosInstance.delete(`/api/sesion-groups/${id}`);
+    await axiosInstance.delete(`/sesion-groups/${id}`);
   } catch (error) {
     console.error(`Error deleting session group with ID ${id}:`, error);
     throw error;
@@ -82,7 +82,7 @@ export const deleteSesionGroup = async (id) => {
  */
 export const bulkCreateSesionGroups = async (sesionGroups) => {
   try {
-    const response = await axiosInstance.post("/api/sesion-groups/importar", sesionGroups);
+    const response = await axiosInstance.post("/sesion-groups/importar", sesionGroups);
     return response.data;
   } catch (error) {
     console.error("Error bulk creating session groups:", error);
@@ -101,7 +101,7 @@ export const bulkCreateSesionGroups = async (sesionGroups) => {
  */
 export const fetchTotalSesionesByEstadoAndFecha = async (startDate, endDate, estado) => {
   try {
-    const response = await axiosInstance.get("/api/business/gruposesiones/total", {
+    const response = await axiosInstance.get("/business/gruposesiones/total", {
       params: { startDate, endDate, estado },
     });
     return response.data;
@@ -120,7 +120,7 @@ export const fetchTotalSesionesByEstadoAndFecha = async (startDate, endDate, est
  */
 export const fetchSesionesByEstadoAndFecha = async (startDate, endDate, estado) => {
   try {
-    const response = await axiosInstance.get("/api/business/gruposesiones", {
+    const response = await axiosInstance.get("/business/gruposesiones", {
       params: { startDate, endDate, estado },
     });
     return response.data;

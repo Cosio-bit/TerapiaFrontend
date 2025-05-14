@@ -6,7 +6,7 @@ import axiosInstance from "./axiosConfig";
  */
 export const fetchGastos = async () => {
   try {
-    const response = await axiosInstance.get("/api/gastos");
+    const response = await axiosInstance.get("/gastos");
     return response.data;
   } catch (error) {
     console.error("Error fetching expenses:", error);
@@ -21,7 +21,7 @@ export const fetchGastos = async () => {
  */
 export const fetchGastoById = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/gastos/${id}`);
+    const response = await axiosInstance.get(`/gastos/${id}`);
     return response.data;
   } catch (error) {
     console.error(`Error fetching expense with ID ${id}:`, error);
@@ -36,7 +36,7 @@ export const fetchGastoById = async (id) => {
  */
 export const createGasto = async (gasto) => {
   try {
-    const response = await axiosInstance.post("/api/gastos", gasto);
+    const response = await axiosInstance.post("/gastos", gasto);
     return response.data;
   } catch (error) {
     console.error("Error creating expense:", error);
@@ -52,7 +52,7 @@ export const createGasto = async (gasto) => {
  */
 export const updateGasto = async (id, gasto) => {
   try {
-    const response = await axiosInstance.put(`/api/gastos/${id}`, gasto);
+    const response = await axiosInstance.put(`/gastos/${id}`, gasto);
     return response.data;
   } catch (error) {
     console.error(`Error updating expense with ID ${id}:`, error);
@@ -66,7 +66,7 @@ export const updateGasto = async (id, gasto) => {
  */
 export const deleteGasto = async (id) => {
   try {
-    await axiosInstance.delete(`/api/gastos/${id}`);
+    await axiosInstance.delete(`/gastos/${id}`);
   } catch (error) {
     console.error(`Error deleting expense with ID ${id}:`, error);
     throw error;
@@ -80,7 +80,7 @@ export const deleteGasto = async (id) => {
  */
 export const bulkCreateGastos = async (gastos) => {
   try {
-    const response = await axiosInstance.post("/api/gastos/importar", gastos);
+    const response = await axiosInstance.post("/gastos/importar", gastos);
     return response.data;
   } catch (error) {
     console.error("Error bulk creating expenses:", error);
@@ -97,7 +97,7 @@ export const bulkCreateGastos = async (gastos) => {
  */
 export const searchGastosByNombreAndFecha = async (nombre, fechaInicio, fechaFin) => {
   try {
-    const response = await axiosInstance.get("/api/gastos/buscar", {
+    const response = await axiosInstance.get("/gastos/buscar", {
       params: { nombre, fechaInicio, fechaFin },
     });
     return response.data;
@@ -116,7 +116,7 @@ export const searchGastosByNombreAndFecha = async (nombre, fechaInicio, fechaFin
  */
 export const fetchAverageGastoByNombreAndFecha = async (nombre, fechaInicio, fechaFin) => {
   try {
-    const response = await axiosInstance.get("/api/gastos/promedio", {
+    const response = await axiosInstance.get("/gastos/promedio", {
       params: { nombre, fechaInicio, fechaFin },
     });
     return response.data;
@@ -134,7 +134,7 @@ export const fetchAverageGastoByNombreAndFecha = async (nombre, fechaInicio, fec
  */
 export const fetchTotalGastosByFecha = async (fechaInicio, fechaFin) => {
   try {
-    const response = await axiosInstance.get("/api/gastos/total", {
+    const response = await axiosInstance.get("/gastos/total", {
       params: { fechaInicio, fechaFin },
     });
     return response.data;

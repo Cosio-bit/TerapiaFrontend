@@ -6,7 +6,7 @@ import axiosInstance from "./axiosConfig";
  */
 export const fetchVariantes = async () => {
   try {
-    const response = await axiosInstance.get("/api/variantes");
+    const response = await axiosInstance.get("/variantes");
     return response.data;
   } catch (error) {
     console.error("Error fetching service variants:", error);
@@ -21,7 +21,7 @@ export const fetchVariantes = async () => {
  */
 export const fetchVariantesByTerapiaId = async (idTerapia) => {
   try {
-    const response = await axiosInstance.get(`/api/variantes/terapia/${idTerapia}`);
+    const response = await axiosInstance.get(`/variantes/terapia/${idTerapia}`);
     return response.data;
   } catch (error) {
     console.error(`Error fetching variants for therapy with ID ${idTerapia}:`, error);
@@ -36,7 +36,7 @@ export const fetchVariantesByTerapiaId = async (idTerapia) => {
  */
 export const fetchVarianteById = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/variantes/${id}`);
+    const response = await axiosInstance.get(`/variantes/${id}`);
     return response.data;
   } catch (error) {
     console.error(`Error fetching variant with ID ${id}:`, error);
@@ -51,7 +51,7 @@ export const fetchVarianteById = async (id) => {
  */
 export const createVariante = async (varianteServicio) => {
   try {
-    const response = await axiosInstance.post("/api/variantes", varianteServicio);
+    const response = await axiosInstance.post("/variantes", varianteServicio);
     return response.data;
   } catch (error) {
     console.error("Error creating service variant:", error);
@@ -67,7 +67,7 @@ export const createVariante = async (varianteServicio) => {
  */
 export const updateVariante = async (id, varianteServicio) => {
   try {
-    const response = await axiosInstance.put(`/api/variantes/${id}`, varianteServicio);
+    const response = await axiosInstance.put(`/variantes/${id}`, varianteServicio);
     return response.data;
   } catch (error) {
     console.error(`Error updating variant with ID ${id}:`, error);
@@ -81,7 +81,7 @@ export const updateVariante = async (id, varianteServicio) => {
  */
 export const deleteVariante = async (id) => {
   try {
-    await axiosInstance.delete(`/api/variantes/${id}`);
+    await axiosInstance.delete(`/variantes/${id}`);
   } catch (error) {
     console.error(`Error deleting variant with ID ${id}:`, error);
     throw error;
@@ -95,7 +95,7 @@ export const deleteVariante = async (id) => {
  */
 export const bulkCreateVariantes = async (variantes) => {
   try {
-    const response = await axiosInstance.post("/api/variantes/importar", variantes);
+    const response = await axiosInstance.post("/variantes/importar", variantes);
     return response.data;
   } catch (error) {
     console.error("Error bulk creating service variants:", error);

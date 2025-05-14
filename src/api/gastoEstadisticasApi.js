@@ -10,7 +10,7 @@ export const fetchGastosFiltrado = async (startDate, endDate, nombre, idProveedo
   
       console.log("📤 Enviando parámetros gastos:", params);
   
-      const response = await axiosInstance.get("/api/business/gastos", { params });
+      const response = await axiosInstance.get("/business/gastos", { params });
       return response.data;
     } catch (error) {
       console.error("Error fetching expenses:", error);
@@ -29,7 +29,7 @@ export const fetchGastosFiltrado = async (startDate, endDate, nombre, idProveedo
   
       console.log("📤 Enviando parámetros total gastos:", params);
   
-      const response = await axiosInstance.get("/api/business/gastos/total", { params });
+      const response = await axiosInstance.get("/business/gastos/total", { params });
       return response.data;
     } catch (error) {
       console.error("Error fetching total expenses:", error);

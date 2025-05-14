@@ -11,7 +11,7 @@ import axiosInstance from "./axiosConfig";
  */
 export const fetchTotalSesionesByEstadoAndFecha = async (startDate, endDate, estado) => {
     try {
-      const response = await axiosInstance.get("/api/business/gruposesiones/total", {
+      const response = await axiosInstance.get("/business/gruposesiones/total", {
         params: { startDate, endDate, estado },
       });
       return response.data;
@@ -30,7 +30,7 @@ export const fetchTotalSesionesByEstadoAndFecha = async (startDate, endDate, est
    */
   export const fetchSesionesByEstadoAndFecha = async (startDate, endDate, estado) => {
     try {
-      const response = await axiosInstance.get("/api/business/gruposesiones", {
+      const response = await axiosInstance.get("/business/gruposesiones", {
         params: { startDate, endDate, estado },
       });
       return response.data;

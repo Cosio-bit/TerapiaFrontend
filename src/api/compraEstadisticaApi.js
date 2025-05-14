@@ -7,7 +7,7 @@ import axiosInstance from "./axiosConfig";
  */
 export const fetchAmountBetweenDates = async (startDate, endDate) => {
     try {
-      const response = await axiosInstance.get("/api/business/amount", {
+      const response = await axiosInstance.get("/business/amount", {
         params: { startDate, endDate },
       });
       return response.data;
@@ -25,7 +25,7 @@ export const fetchAmountBetweenDates = async (startDate, endDate) => {
    */
   export const fetchComprasBetweenDates = async (startDate, endDate) => {
     try {
-      const response = await axiosInstance.get("/api/business/compras", {
+      const response = await axiosInstance.get("/business/compras", {
         params: { startDate, endDate },
       });
       return response.data;

@@ -5,7 +5,7 @@ import dayjs from "dayjs";
 import { fetchArriendosFiltrado, fetchTotalArriendosFiltrado } from "../api/arriendoEstadisticasApi";
 import { getAllClientes } from "../api/clienteApi";
 import { getAllProveedores } from "../api/proveedorApi";
-import { formatNumber } from '../utils/formatNumber'; // ✅ Añadido
+import { formatnumber } from '../utils/formatnumber'; // ✅ Añadido
 
 const estadoOpciones = [
   "Pagado y Realizado",
@@ -46,7 +46,7 @@ const ArriendosTable = ({ onEdit, onDelete }) => {
         hora_inicio: arriendo.hora_inicio || "No especificado",
         hora_fin: arriendo.hora_fin || "No especificado",
         estado: arriendo.estado || "No especificado",
-        monto_pagado: arriendo.monto_pagado ? `$${formatNumber(arriendo.monto_pagado)}` : "No especificado",
+        monto_pagado: arriendo.monto_pagado ? `$${formatnumber(arriendo.monto_pagado)}` : "No especificado",
       }));
 
       setRows(processedRows);
@@ -192,7 +192,7 @@ const ArriendosTable = ({ onEdit, onDelete }) => {
 
         <Box display="flex" alignItems="center" gap={2} sx={{ minWidth: 250 }}>
           <Typography variant="h6" sx={{ whiteSpace: 'nowrap' }}>
-            Total: ${formatNumber(totalAmount)}
+            Total: ${formatnumber(totalAmount)}
           </Typography>
           <Button variant="contained" onClick={loadArriendos}>
             Actualizar

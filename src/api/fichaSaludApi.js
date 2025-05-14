@@ -6,7 +6,7 @@ import axiosInstance from "./axiosConfig";
  */
 export const getAllFichasSalud = async () => {
   try {
-    const response = await axiosInstance.get("/api/fichas-salud");
+    const response = await axiosInstance.get("/fichas-salud");
     return response.data;
   } catch (error) {
     console.error("Error fetching health records:", error);
@@ -21,7 +21,7 @@ export const getAllFichasSalud = async () => {
  */
 export const fetchFichaSaludById = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/fichas-salud/${id}`);
+    const response = await axiosInstance.get(`/fichas-salud/${id}`);
     return response.data;
   } catch (error) {
     console.error(`Error fetching health record with ID ${id}:`, error);
@@ -36,7 +36,7 @@ export const fetchFichaSaludById = async (id) => {
  */
 export const createFichaSalud = async (fichaSalud) => {
   try {
-    const response = await axiosInstance.post("/api/fichas-salud", fichaSalud);
+    const response = await axiosInstance.post("/fichas-salud", fichaSalud);
     return response.data;
   } catch (error) {
     console.error("Error creating health record:", error);
@@ -52,7 +52,7 @@ export const createFichaSalud = async (fichaSalud) => {
  */
 export const updateFichaSalud = async (id, fichaSalud) => {
   try {
-    const response = await axiosInstance.put(`/api/fichas-salud/${id}`, fichaSalud);
+    const response = await axiosInstance.put(`/fichas-salud/${id}`, fichaSalud);
     return response.data;
   } catch (error) {
     console.error(`Error updating health record with ID ${id}:`, error);
@@ -66,7 +66,7 @@ export const updateFichaSalud = async (id, fichaSalud) => {
  */
 export const deleteFichaSalud = async (id) => {
   try {
-    await axiosInstance.delete(`/api/fichas-salud/${id}`);
+    await axiosInstance.delete(`/fichas-salud/${id}`);
   } catch (error) {
     console.error(`Error deleting health record with ID ${id}:`, error);
     throw error;
@@ -80,7 +80,7 @@ export const deleteFichaSalud = async (id) => {
  */
 export const bulkCreateFichasSalud = async (fichasSalud) => {
   try {
-    const response = await axiosInstance.post("/api/fichas-salud/importar", fichasSalud);
+    const response = await axiosInstance.post("/fichas-salud/importar", fichasSalud);
     return response.data;
   } catch (error) {
     console.error("Error bulk creating health records:", error);

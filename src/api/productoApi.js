@@ -6,7 +6,7 @@ import axiosInstance from "./axiosConfig";
  */
 export const fetchProductos = async () => {
   try {
-    const response = await axiosInstance.get("/api/productos");
+    const response = await axiosInstance.get("/productos");
     return response.data;
   } catch (error) {
     console.error("Error fetching productos:", error);
@@ -16,7 +16,7 @@ export const fetchProductos = async () => {
 
 export const getAllProductos = async () => {
   try {
-    const response = await axiosInstance.get("/api/productos");
+    const response = await axiosInstance.get("/productos");
     return response.data;
   } catch (error) {
     console.error("Error fetching productos:", error);
@@ -31,7 +31,7 @@ export const getAllProductos = async () => {
  */
 export const fetchProductoById = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/productos/${id}`);
+    const response = await axiosInstance.get(`/productos/${id}`);
     return response.data;
   } catch (error) {
     console.error(`Error fetching producto with ID ${id}:`, error);
@@ -47,7 +47,7 @@ export const fetchProductoById = async (id) => {
 export const createProducto = async (producto) => {
   try {
     console.log("📤 Sending data to backend:", JSON.stringify(producto, null, 2)); // 🐛 Debug request payload
-    const response = await axiosInstance.post("/api/productos", producto);
+    const response = await axiosInstance.post("/productos", producto);
     return response.data;
   } catch (error) {
     console.error("❌ Error creating producto:", error.response?.data || error.message);
@@ -63,7 +63,7 @@ export const createProducto = async (producto) => {
  */
 export const updateProducto = async (id, producto) => {
   try {
-    const response = await axiosInstance.put(`/api/productos/${id}`, producto);
+    const response = await axiosInstance.put(`/productos/${id}`, producto);
     return response.data;
   } catch (error) {
     console.error(`Error updating producto with ID ${id}:`, error);
@@ -77,7 +77,7 @@ export const updateProducto = async (id, producto) => {
  */
 export const deleteProducto = async (id) => {
   try {
-    await axiosInstance.delete(`/api/productos/${id}`);
+    await axiosInstance.delete(`/productos/${id}`);
   } catch (error) {
     console.error(`Error deleting producto with ID ${id}:`, error);
     throw error;

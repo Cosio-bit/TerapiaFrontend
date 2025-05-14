@@ -6,7 +6,7 @@ import axiosInstance from "./axiosConfig";
  */
 export const getAllTerapias = async () => {
   try {
-    const response = await axiosInstance.get("/api/terapias");
+    const response = await axiosInstance.get("/terapias");
     return response.data;
   } catch (error) {
     console.error("❌ Error fetching therapies:", error);
@@ -21,7 +21,7 @@ export const getAllTerapias = async () => {
  */
 export const fetchTerapiaById = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/terapias/${id}`);
+    const response = await axiosInstance.get(`/terapias/${id}`);
     return response.data;
   } catch (error) {
     console.error(`❌ Error fetching therapy with ID ${id}:`, error);
@@ -40,7 +40,7 @@ export const createTerapia = async (terapia) => {
 
     console.log("🛠️ Sending Create Terapia Payload:", JSON.stringify(formattedTerapia, null, 2));
 
-    const response = await axiosInstance.post("/api/terapias", formattedTerapia);
+    const response = await axiosInstance.post("/terapias", formattedTerapia);
     return response.data;
   } catch (error) {
     console.error("❌ Error creating therapy:", error.response?.data || error.message);
@@ -60,7 +60,7 @@ export const updateTerapia = async (id, terapia) => {
 
     console.log(`🛠️ Sending Update Terapia (ID: ${id}) Payload:`, JSON.stringify(formattedTerapia, null, 2));
 
-    const response = await axiosInstance.put(`/api/terapias/${id}`, formattedTerapia);
+    const response = await axiosInstance.put(`/terapias/${id}`, formattedTerapia);
     return response.data;
   } catch (error) {
     console.error(`❌ Error updating therapy with ID ${id}:`, error.response?.data || error.message);
@@ -74,7 +74,7 @@ export const updateTerapia = async (id, terapia) => {
  */
 export const deleteTerapia = async (id) => {
   try {
-    await axiosInstance.delete(`/api/terapias/${id}`);
+    await axiosInstance.delete(`/terapias/${id}`);
   } catch (error) {
     console.error(`❌ Error deleting therapy with ID ${id}:`, error.response?.data || error.message);
     throw error;

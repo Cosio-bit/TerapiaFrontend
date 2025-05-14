@@ -6,7 +6,7 @@ import axiosInstance from "./axiosConfig";
  */
 export const getAllSesiones = async () => {
   try {
-    const response = await axiosInstance.get("/api/sesiones");
+    const response = await axiosInstance.get("/sesiones");
     return response.data;
   } catch (error) {
     console.error("Error fetching sessions:", error);
@@ -21,7 +21,7 @@ export const getAllSesiones = async () => {
  */
 export const fetchSesionById = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/sesiones/${id}`);
+    const response = await axiosInstance.get(`/sesiones/${id}`);
     return response.data;
   } catch (error) {
     console.error(`Error fetching session with ID ${id}:`, error);
@@ -36,7 +36,7 @@ export const fetchSesionById = async (id) => {
  */
 export const createSesion = async (sesion) => {
   try {
-    const response = await axiosInstance.post("/api/sesiones", sesion);
+    const response = await axiosInstance.post("/sesiones", sesion);
     return response.data;
   } catch (error) {
     console.error("Error creating session:", error);
@@ -52,7 +52,7 @@ export const createSesion = async (sesion) => {
  */
 export const updateSesion = async (id, sesion) => {
   try {
-    const response = await axiosInstance.put(`/api/sesiones/${id}`, sesion);
+    const response = await axiosInstance.put(`/sesiones/${id}`, sesion);
     return response.data;
   } catch (error) {
     console.error(`Error updating session with ID ${id}:`, error);
@@ -66,7 +66,7 @@ export const updateSesion = async (id, sesion) => {
  */
 export const deleteSesion = async (id) => {
   try {
-    await axiosInstance.delete(`/api/sesiones/${id}`);
+    await axiosInstance.delete(`/sesiones/${id}`);
   } catch (error) {
     console.error(`Error deleting session with ID ${id}:`, error);
     throw error;
@@ -79,7 +79,7 @@ export const deleteSesion = async (id) => {
  */
 export const getAllProfesionales = async () => {
   try {
-    const response = await axiosInstance.get("/api/profesionales");
+    const response = await axiosInstance.get("/profesionales");
     return response.data;
   } catch (error) {
     console.error("Error fetching professionals:", error);

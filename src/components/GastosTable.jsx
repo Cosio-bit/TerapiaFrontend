@@ -4,7 +4,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import dayjs from "dayjs";
 import { fetchGastosFiltrado } from "../api/gastoEstadisticasApi";
 import { getAllProveedores } from "../api/proveedorApi";
-import { formatNumber } from '../utils/formatNumber'; // ✅ Añadido formato numérico
+import { formatnumber } from '../utils/formatnumber'; // ✅ Añadido formato numérico
 
 const descripcionOpciones = ["Gastos Fijos", "Insumos", "Productos", "Sueldos"];
 
@@ -42,7 +42,7 @@ const GastosTable = ({ onEdit, onDelete }) => {
         monto: gasto.monto,
         fecha: dayjs(gasto.fecha).format("DD/MM/YYYY"),
         proveedor: gasto.proveedor?.usuario?.nombre || "No especificado",
-        montoFormateado: formatNumber(gasto.monto || 0), // ✅ Formateado aquí
+        montoFormateado: formatnumber(gasto.monto || 0), // ✅ Formateado aquí
       }));
 
       setRows(processedRows);
@@ -121,7 +121,7 @@ const GastosTable = ({ onEdit, onDelete }) => {
           ))}
         </TextField>
 
-        <Typography variant="h6">Total: ${formatNumber(totalAmount)}</Typography> {/* ✅ Formateado */}
+        <Typography variant="h6">Total: ${formatnumber(totalAmount)}</Typography> {/* ✅ Formateado */}
         <Button variant="contained" onClick={loadGastos}>Actualizar</Button>
       </Box>
 

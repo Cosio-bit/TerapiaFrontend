@@ -4,7 +4,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import dayjs from "dayjs";
 import { fetchSesionesIndividuales, fetchTotalSesionesIndividuales } from "../api/sesionEstadisticasApi";
 import { getAllProfesionales } from "../api/profesionalApi";
-import { formatNumber } from '../utils/formatNumber'; // ✅ Import añadido
+import { formatnumber } from '../utils/formatnumber'; // ✅ Import añadido
 
 const estadoOpciones = [
   "Pagado y Realizado",
@@ -67,7 +67,7 @@ const SesionesTable = ({ onEdit, onDelete }) => {
         id: sesion.id_sesion,
         fecha_hora: dayjs(sesion.fecha_hora).format("DD/MM/YYYY HH:mm"),
         profesional: sesion.profesional?.usuario?.nombre || "Sin profesional",
-        precioFormateado: formatNumber(sesion.precio || 0),
+        precioFormateado: formatnumber(sesion.precio || 0),
       }))
     : [];
 
@@ -150,7 +150,7 @@ const SesionesTable = ({ onEdit, onDelete }) => {
 
         <Box display="flex" alignItems="center" gap={2} sx={{ minWidth: 250 }}>
           <Typography variant="h6" sx={{ whiteSpace: "nowrap" }}>
-            Total: ${formatNumber(totalAmount)}
+            Total: ${formatnumber(totalAmount)}
           </Typography>
           <Button variant="contained" onClick={loadSesiones}>
             Actualizar

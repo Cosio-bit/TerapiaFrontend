@@ -5,7 +5,7 @@ import axiosInstance from "./axiosConfig";
  */
 export const fetchTotalArriendosFiltrado = async (startDate, endDate, estado, idCliente, idProveedor) => {
   try {
-    const response = await axiosInstance.get("/api/business/arriendos/total", {
+    const response = await axiosInstance.get("/business/arriendos/total", {
       params: { startDate, endDate, estado, idCliente, idProveedor },
     });
     return response.data;
@@ -20,7 +20,7 @@ export const fetchTotalArriendosFiltrado = async (startDate, endDate, estado, id
  */
 export const fetchArriendosFiltrado = async (startDate, endDate, estado, idCliente, idProveedor) => {
   try {
-    const response = await axiosInstance.get("/api/business/arriendos", {
+    const response = await axiosInstance.get("/business/arriendos", {
       params: { startDate, endDate, estado, idCliente, idProveedor },
     });
     return response.data;

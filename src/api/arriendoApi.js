@@ -6,7 +6,7 @@ import axiosInstance from "./axiosConfig";
  */
 export const fetchArriendos = async () => {
   try {
-    const response = await axiosInstance.get("/api/arriendos");
+    const response = await axiosInstance.get("/arriendos");
     return response.data;
   } catch (error) {
     console.error("Error fetching arriendos:", error);
@@ -16,7 +16,7 @@ export const fetchArriendos = async () => {
 
 export const getAllArriendos = async () => {
   try {
-    const response = await axiosInstance.get("/api/arriendos");
+    const response = await axiosInstance.get("/arriendos");
     return response.data;
   } catch (error) {
     console.error("Error fetching arriendos:", error);
@@ -31,7 +31,7 @@ export const getAllArriendos = async () => {
  */
 export const fetchArriendoById = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/arriendos/${id}`);
+    const response = await axiosInstance.get(`/arriendos/${id}`);
     return response.data;
   } catch (error) {
     console.error(`Error fetching arriendo with ID ${id}:`, error);
@@ -47,7 +47,7 @@ export const fetchArriendoById = async (id) => {
 export const createArriendo = async (arriendo) => {
   try {
     console.log("📤 Sending data to backend:", JSON.stringify(arriendo, null, 2)); // 🐛 Debug request payload
-    const response = await axiosInstance.post("/api/arriendos", arriendo);
+    const response = await axiosInstance.post("/arriendos", arriendo);
     return response.data;
   } catch (error) {
     console.error("❌ Error creating arriendo:", error.response?.data || error.message);
@@ -63,7 +63,7 @@ export const createArriendo = async (arriendo) => {
  */
 export const updateArriendo = async (id, arriendo) => {
   try {
-    const response = await axiosInstance.put(`/api/arriendos/${id}`, arriendo);
+    const response = await axiosInstance.put(`/arriendos/${id}`, arriendo);
     return response.data;
   } catch (error) {
     console.error(`Error updating arriendo with ID ${id}:`, error);
@@ -77,7 +77,7 @@ export const updateArriendo = async (id, arriendo) => {
  */
 export const deleteArriendo = async (id) => {
   try {
-    await axiosInstance.delete(`/api/arriendos/${id}`);
+    await axiosInstance.delete(`/arriendos/${id}`);
   } catch (error) {
     console.error(`Error deleting arriendo with ID ${id}:`, error);
     throw error;
@@ -91,7 +91,7 @@ export const deleteArriendo = async (id) => {
  */
 export const fetchArriendosByCliente = async (idCliente) => {
   try {
-    const response = await axiosInstance.get(`/api/arriendos/cliente/${idCliente}`);
+    const response = await axiosInstance.get(`/arriendos/cliente/${idCliente}`);
     return response.data;
   } catch (error) {
     console.error("Error fetching arriendos por cliente:", error);

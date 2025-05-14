@@ -6,7 +6,7 @@ import axiosInstance from "./axiosConfig";
  */
 export const getAllProveedores = async () => {
   try {
-    const response = await axiosInstance.get("/api/proveedores");
+    const response = await axiosInstance.get("/proveedores");
     return response.data;
   } catch (error) {
     console.error("Error fetching suppliers:", error);
@@ -21,7 +21,7 @@ export const getAllProveedores = async () => {
  */
 export const fetchProveedorById = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/proveedores/${id}`);
+    const response = await axiosInstance.get(`/proveedores/${id}`);
     return response.data;
   } catch (error) {
     console.error(`Error fetching supplier with ID ${id}:`, error);
@@ -36,7 +36,7 @@ export const fetchProveedorById = async (id) => {
  */
 export const createProveedor = async (proveedor) => {
   try {
-    const response = await axiosInstance.post("/api/proveedores", {
+    const response = await axiosInstance.post("/proveedores", {
       ...proveedor,
       usuario: { id_usuario: proveedor.id_usuario }, // Ensure nested user object
     });
@@ -55,7 +55,7 @@ export const createProveedor = async (proveedor) => {
  */
 export const updateProveedor = async (id, proveedor) => {
   try {
-    const response = await axiosInstance.put(`/api/proveedores/${id}`, {
+    const response = await axiosInstance.put(`/proveedores/${id}`, {
       ...proveedor,
       usuario: { id_usuario: proveedor.id_usuario },
     });
@@ -72,7 +72,7 @@ export const updateProveedor = async (id, proveedor) => {
  */
 export const deleteProveedor = async (id) => {
   try {
-    await axiosInstance.delete(`/api/proveedores/${id}`);
+    await axiosInstance.delete(`/proveedores/${id}`);
   } catch (error) {
     console.error(`Error deleting supplier with ID ${id}:`, error);
     throw error;
@@ -86,7 +86,7 @@ export const deleteProveedor = async (id) => {
  */
 export const bulkCreateProveedores = async (proveedores) => {
   try {
-    const response = await axiosInstance.post("/api/proveedores/importar", proveedores);
+    const response = await axiosInstance.post("/proveedores/importar", proveedores);
     return response.data;
   } catch (error) {
     console.error("Error bulk creating suppliers:", error);

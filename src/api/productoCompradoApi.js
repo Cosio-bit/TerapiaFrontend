@@ -6,7 +6,7 @@ import axiosInstance from "./axiosConfig";
  */
 export const getAllProductosComprados = async () => {
   try {
-    const response = await axiosInstance.get("/api/productos-comprados");
+    const response = await axiosInstance.get("/productos-comprados");
     return response.data;
   } catch (error) {
     console.error("Error fetching purchased products:", error);
@@ -21,7 +21,7 @@ export const getAllProductosComprados = async () => {
  */
 export const fetchProductoCompradoById = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/productos-comprados/${id}`);
+    const response = await axiosInstance.get(`/productos-comprados/${id}`);
     return response.data;
   } catch (error) {
     console.error(`Error fetching purchased product with ID ${id}:`, error);
@@ -37,7 +37,7 @@ export const fetchProductoCompradoById = async (id) => {
 export const createProductoComprado = async (productoComprado) => {
   try {
     console.log("📤 Sending purchased product data to backend:", JSON.stringify(productoComprado, null, 2)); // 🐛 Debug request payload
-    const response = await axiosInstance.post("/api/productos-comprados", productoComprado);
+    const response = await axiosInstance.post("/productos-comprados", productoComprado);
     return response.data;
   } catch (error) {
     console.error("❌ Error creating purchased product:", error.response?.data || error.message);
@@ -53,7 +53,7 @@ export const createProductoComprado = async (productoComprado) => {
  */
 export const updateProductoComprado = async (id, productoComprado) => {
   try {
-    const response = await axiosInstance.put(`/api/productos-comprados/${id}`, productoComprado);
+    const response = await axiosInstance.put(`/productos-comprados/${id}`, productoComprado);
     return response.data;
   } catch (error) {
     console.error(`Error updating purchased product with ID ${id}:`, error);
@@ -67,7 +67,7 @@ export const updateProductoComprado = async (id, productoComprado) => {
  */
 export const deleteProductoComprado = async (id) => {
   try {
-    await axiosInstance.delete(`/api/productos-comprados/${id}`);
+    await axiosInstance.delete(`/productos-comprados/${id}`);
   } catch (error) {
     console.error(`Error deleting purchased product with ID ${id}:`, error);
     throw error;
@@ -80,7 +80,7 @@ export const deleteProductoComprado = async (id) => {
  */
 export const getAllProductos = async () => {
   try {
-    const response = await axiosInstance.get("/api/productos");
+    const response = await axiosInstance.get("/productos");
     return response.data;
   } catch (error) {
     console.error("Error fetching products:", error);

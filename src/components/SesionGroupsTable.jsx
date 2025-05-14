@@ -11,7 +11,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import dayjs from "dayjs";
 import { fetchSesionesByEstadoAndFecha } from "../api/sesionGroupEstadisticasApi";
 import { getAllTerapias } from "../api/terapiaApi";
-import { formatNumber } from "../utils/formatNumber";
+import { formatnumber } from "../utils/formatnumber";
 
 const estadoOpciones = [
   "Pagado y Realizado",
@@ -153,7 +153,7 @@ const SesionGroupsTable = ({ onEdit, onDelete }) => {
 
         <Box display="flex" alignItems="center" gap={2} sx={{ minWidth: 250 }}>
           <Typography variant="h6" sx={{ whiteSpace: "nowrap" }}>
-            Total: ${formatNumber(totalAmount)}
+            Total: ${formatnumber(totalAmount)}
           </Typography>
           <Button variant="contained" onClick={loadSesiones}>
             Actualizar
@@ -231,7 +231,7 @@ const SesionGroupsTable = ({ onEdit, onDelete }) => {
                   📅 {dayjs(sesion.fecha_hora).format("DD/MM/YYYY HH:mm")}
                 </Typography>
                 <Typography variant="body2">
-                  💰 ${formatNumber(sesion.precio)}
+                  💰 ${formatnumber(sesion.precio)}
                 </Typography>
                 <Typography variant="body2">
                   🏷️ Estado: {sesion.estado}

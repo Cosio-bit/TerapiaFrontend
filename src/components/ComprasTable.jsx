@@ -4,7 +4,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import dayjs from "dayjs";
 import { fetchComprasBetweenDates } from "../api/compraEstadisticaApi";
 import { getAllClientes } from "../api/clienteApi";
-import { formatNumber } from '../utils/formatNumber'; // ✅ Añadido
+import { formatnumber } from '../utils/formatnumber'; // ✅ Añadido
 
 const ComprasTable = ({ compras, onEdit, onDelete }) => {
   const [startDate, setStartDate] = useState(dayjs().startOf('month').format("YYYY-MM-DDTHH:mm"));
@@ -87,7 +87,7 @@ const ComprasTable = ({ compras, onEdit, onDelete }) => {
         />
 
         <Typography variant="h6" component="span">
-          Total: ${formatNumber(totalAmount)} {/* ✅ Formateado */}
+          Total: ${formatnumber(totalAmount)} {/* ✅ Formateado */}
         </Typography>
         <Button variant="contained" onClick={loadCompras}>Actualizar</Button>
       </Box>
@@ -98,7 +98,7 @@ const ComprasTable = ({ compras, onEdit, onDelete }) => {
           fecha: dayjs(compra.fecha).format("DD/MM/YYYY HH:mm"),
           cliente: compra.cliente?.usuario?.nombre || "No especificado",
           productosComprados: Array.isArray(compra.productosComprados) ? compra.productosComprados : [],
-          montoCompra: formatNumber(compra.productosComprados.reduce( // ✅ montoCompra formateado
+          montoCompra: formatnumber(compra.productosComprados.reduce( // ✅ montoCompra formateado
             (prodAcc, prod) => prodAcc + (prod.producto.precio * prod.cantidad), 0
           )),
         }))}
@@ -115,7 +115,7 @@ const ComprasTable = ({ compras, onEdit, onDelete }) => {
                 <Box component="ul" sx={{ paddingLeft: "15px", margin: 0 }}>
                   {productos.map((producto, index) => (
                     <Typography component="li" key={index} variant="body2">
-                      🏷️ {producto.producto?.nombre || "Desconocido"} | 🔢 {producto.cantidad} | 💰 ${formatNumber(producto.producto.precio * producto.cantidad)} {/* ✅ Formateado */}
+                      🏷️ {producto.producto?.nombre || "Desconocido"} | 🔢 {producto.cantidad} | 💰 ${formatnumber(producto.producto.precio * producto.cantidad)} {/* ✅ Formateado */}
                     </Typography>
                   ))}
                 </Box>

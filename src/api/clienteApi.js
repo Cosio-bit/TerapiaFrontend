@@ -6,7 +6,7 @@ import axiosInstance from "./axiosConfig";
  */
 export const getAllClientes = async () => {
   try {
-    const response = await axiosInstance.get("/api/clientes");
+    const response = await axiosInstance.get("/clientes");
     return response.data;
   } catch (error) {
     console.error("❌ Error fetching clients:", error);
@@ -21,7 +21,7 @@ export const getAllClientes = async () => {
  */
 export const fetchClienteById = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/clientes/${id}`);
+    const response = await axiosInstance.get(`/clientes/${id}`);
     return response.data;
   } catch (error) {
     console.error(`❌ Error fetching client with ID ${id}:`, error);
@@ -40,7 +40,7 @@ export const createCliente = async (cliente) => {
 
     console.log("🛠️ Sending Create Cliente Payload:", JSON.stringify(formattedCliente, null, 2));
 
-    const response = await axiosInstance.post("/api/clientes", formattedCliente);
+    const response = await axiosInstance.post("/clientes", formattedCliente);
     return response.data;
   } catch (error) {
     console.error("❌ Error creating client:", error.response?.data || error.message);
@@ -60,7 +60,7 @@ export const updateCliente = async (id, cliente) => {
 
     console.log(`🛠️ Sending Update Cliente (ID: ${id}) Payload:`, JSON.stringify(formattedCliente, null, 2));
 
-    const response = await axiosInstance.put(`/api/clientes/${id}`, formattedCliente);
+    const response = await axiosInstance.put(`/clientes/${id}`, formattedCliente);
     return response.data;
   } catch (error) {
     console.error(`❌ Error updating client with ID ${id}:`, error.response?.data || error.message);
@@ -74,7 +74,7 @@ export const updateCliente = async (id, cliente) => {
  */
 export const deleteCliente = async (id) => {
   try {
-    await axiosInstance.delete(`/api/clientes/${id}`);
+    await axiosInstance.delete(`/clientes/${id}`);
   } catch (error) {
     console.error(`❌ Error deleting client with ID ${id}:`, error.response?.data || error.message);
     throw error;

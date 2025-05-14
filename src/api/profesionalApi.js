@@ -6,7 +6,7 @@ import axiosInstance from "./axiosConfig";
  */
 export const getAllProfesionales = async () => {
   try {
-    const response = await axiosInstance.get("/api/profesionales");
+    const response = await axiosInstance.get("/profesionales");
 
     console.log("Raw response from API (Profesionales):", response.data); // Debugging log
 
@@ -33,7 +33,7 @@ export const getAllProfesionales = async () => {
  */
 export const fetchProfesionalById = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/profesionales/${id}`);
+    const response = await axiosInstance.get(`/profesionales/${id}`);
     return response.data;
   } catch (error) {
     console.error(`Error fetching professional with ID ${id}:`, error);
@@ -48,7 +48,7 @@ export const createProfesional = async (profesional) => {
   try {
     console.log("Creating Profesional with:", profesional); // Debugging log
 
-    const response = await axiosInstance.post("/api/profesionales", {
+    const response = await axiosInstance.post("/profesionales", {
       ...profesional,
       usuario: { id_usuario: profesional.id_usuario }, // Ensure correct structure
     });
@@ -69,7 +69,7 @@ export const updateProfesional = async (id, profesional) => {
   try {
     console.log(`Updating Profesional ID ${id} with:`, profesional); // Debugging log
 
-    const response = await axiosInstance.put(`/api/profesionales/${id}`, {
+    const response = await axiosInstance.put(`/profesionales/${id}`, {
       ...profesional,
       usuario: { id_usuario: profesional.id_usuario }, // Ensure usuario is structured properly
     });
@@ -88,7 +88,7 @@ export const updateProfesional = async (id, profesional) => {
  */
 export const deleteProfesional = async (id) => {
   try {
-    await axiosInstance.delete(`/api/profesionales/${id}`);
+    await axiosInstance.delete(`/profesionales/${id}`);
   } catch (error) {
     console.error(`Error deleting professional with ID ${id}:`, error);
     throw error;

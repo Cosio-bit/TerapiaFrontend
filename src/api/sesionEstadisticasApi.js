@@ -2,7 +2,7 @@ import axiosInstance from "./axiosConfig";
 
 export const fetchTotalSesionesIndividuales = async (startDate, endDate, estado, idProfesional) => {
     try {
-      const response = await axiosInstance.get("/api/business/sesiones/total", {
+      const response = await axiosInstance.get("/business/sesiones/total", {
         params: { startDate, endDate, estado, idProfesional },
       });
       return response.data;
@@ -15,7 +15,7 @@ export const fetchTotalSesionesIndividuales = async (startDate, endDate, estado,
 
   export const fetchSesionesIndividuales = async (startDate, endDate, estado, idProfesional) => {
     try {
-      const response = await axiosInstance.get("/api/business/sesiones", {
+      const response = await axiosInstance.get("/business/sesiones", {
         params: { startDate, endDate, estado, idProfesional },
       });
       return response.data;

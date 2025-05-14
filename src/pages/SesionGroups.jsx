@@ -13,7 +13,7 @@ import SesionGroupsTable from "../components/SesionGroupsTable";
 import SesionGroupFormDialog from "../components/SesionGroupFormDialog";
 
 // ✅ Función de formateo numérico integrada directamente
-const formatNumber = (number) => {
+const formatnumber = (number) => {
   return new Intl.NumberFormat('es-CL').format(number);
 };
 
@@ -174,8 +174,8 @@ const SesionGroups = () => {
       <SesionGroupsTable
         sesionGroups={sesionGroups.map(sg => ({
           ...sg,
-          cantidad: sg.cantidad ? formatNumber(sg.cantidad) : sg.cantidad,
-          costo: sg.costo ? formatNumber(sg.costo) : sg.costo
+          cantidad: sg.cantidad ? formatnumber(sg.cantidad) : sg.cantidad,
+          costo: sg.costo ? formatnumber(sg.costo) : sg.costo
         }))}
         onEdit={handleEditSesionGroup}
         onDelete={handleDeleteSesionGroup}

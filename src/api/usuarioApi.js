@@ -6,7 +6,7 @@ import axiosInstance from "./axiosConfig";
  */
 export const getAllUsuarios = async () => {
   try {
-    const response = await axiosInstance.get("/api/usuarios");
+    const response = await axiosInstance.get("/usuarios");
     return response.data;
   } catch (error) {
     console.error("Error fetching users:", error);
@@ -21,7 +21,7 @@ export const getAllUsuarios = async () => {
  */
 export const fetchUsuarioById = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/usuarios/${id}`);
+    const response = await axiosInstance.get(`/usuarios/${id}`);
     return response.data;
   } catch (error) {
     console.error(`Error fetching user with ID ${id}:`, error);
@@ -36,7 +36,7 @@ export const fetchUsuarioById = async (id) => {
  */
 export const createUsuario = async (usuario) => {
   try {
-    const response = await axiosInstance.post("/api/usuarios", usuario);
+    const response = await axiosInstance.post("/usuarios", usuario);
     return response.data;
   } catch (error) {
     console.error("Error creating user:", error);
@@ -52,7 +52,7 @@ export const createUsuario = async (usuario) => {
  */
 export const updateUsuario = async (id, usuario) => {
   try {
-    const response = await axiosInstance.put(`/api/usuarios/${id}`, usuario);
+    const response = await axiosInstance.put(`/usuarios/${id}`, usuario);
     return response.data;
   } catch (error) {
     console.error(`Error updating user with ID ${id}:`, error);
@@ -66,7 +66,7 @@ export const updateUsuario = async (id, usuario) => {
  */
 export const deleteUsuario = async (id) => {
   try {
-    await axiosInstance.delete(`/api/usuarios/${id}`);
+    await axiosInstance.delete(`/usuarios/${id}`);
   } catch (error) {
     console.error(`Error deleting user with ID ${id}:`, error);
     throw error;
@@ -80,7 +80,7 @@ export const deleteUsuario = async (id) => {
  */
 export const bulkCreateUsuarios = async (usuarios) => {
   try {
-    const response = await axiosInstance.post("/api/usuarios/importar", usuarios);
+    const response = await axiosInstance.post("/usuarios/importar", usuarios);
     return response.data;
   } catch (error) {
     console.error("Error bulk creating users:", error);

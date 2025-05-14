@@ -6,7 +6,7 @@ import axiosInstance from "./axiosConfig";
  */
 export const getAllCategorias = async () => {
   try {
-    const response = await axiosInstance.get("/api/categorias");
+    const response = await axiosInstance.get("/categorias");
     return response.data;
   } catch (error) {
     console.error("Error fetching categories:", error);
@@ -21,7 +21,7 @@ export const getAllCategorias = async () => {
  */
 export const fetchCategoriaById = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/categorias/${id}`);
+    const response = await axiosInstance.get(`/categorias/${id}`);
     return response.data;
   } catch (error) {
     console.error(`Error fetching category with ID ${id}:`, error);
@@ -36,7 +36,7 @@ export const fetchCategoriaById = async (id) => {
  */
 export const createCategoria = async (categoria) => {
   try {
-    const response = await axiosInstance.post("/api/categorias", categoria);
+    const response = await axiosInstance.post("/categorias", categoria);
     return response.data;
   } catch (error) {
     console.error("Error creating category:", error);
@@ -52,7 +52,7 @@ export const createCategoria = async (categoria) => {
  */
 export const updateCategoria = async (id, categoria) => {
   try {
-    const response = await axiosInstance.put(`/api/categorias/${id}`, categoria);
+    const response = await axiosInstance.put(`/categorias/${id}`, categoria);
     return response.data;
   } catch (error) {
     console.error(`Error updating category with ID ${id}:`, error);
@@ -66,7 +66,7 @@ export const updateCategoria = async (id, categoria) => {
  */
 export const deleteCategoria = async (id) => {
   try {
-    await axiosInstance.delete(`/api/categorias/${id}`);
+    await axiosInstance.delete(`/categorias/${id}`);
   } catch (error) {
     console.error(`Error deleting category with ID ${id}:`, error);
     throw error;
@@ -80,7 +80,7 @@ export const deleteCategoria = async (id) => {
  */
 export const bulkCreateCategorias = async (categorias) => {
   try {
-    const response = await axiosInstance.post("/api/categorias/importar", categorias);
+    const response = await axiosInstance.post("/categorias/importar", categorias);
     return response.data;
   } catch (error) {
     console.error("Error bulk creating categories:", error);
@@ -95,7 +95,7 @@ export const bulkCreateCategorias = async (categorias) => {
  */
 export const fetchTerapiasByCategoria = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/categorias/${id}/terapias`);
+    const response = await axiosInstance.get(`/categorias/${id}/terapias`);
     return response.data;
   } catch (error) {
     console.error(`Error fetching therapies for category ID ${id}:`, error);
@@ -110,7 +110,7 @@ export const fetchTerapiasByCategoria = async (id) => {
  */
 export const fetchSalasByCategoria = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/categorias/${id}/salas`);
+    const response = await axiosInstance.get(`/categorias/${id}/salas`);
     return response.data;
   } catch (error) {
     console.error(`Error fetching rooms for category ID ${id}:`, error);
@@ -125,7 +125,7 @@ export const fetchSalasByCategoria = async (id) => {
  */
 export const fetchProductosByCategoria = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/categorias/${id}/productos`);
+    const response = await axiosInstance.get(`/categorias/${id}/productos`);
     return response.data;
   } catch (error) {
     console.error(`Error fetching products for category ID ${id}:`, error);
