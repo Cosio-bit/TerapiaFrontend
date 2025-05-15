@@ -1,14 +1,38 @@
 import { permissions } from "./permissions";
 
-/**
- * Check if a role can perform an action on an entity
- * @param {string} role - Role name (admin, editor, viewer)
- * @param {string} action - Action name (view, create, edit, delete)
- * @param {string} entity - Entity name (arriendo, usuario, etc)
- * @returns {boolean}
- */
 export function can(role, action, entity) {
-  if (!permissions[role]) return false; // No such role
-  if (!permissions[role][entity]) return false; // No such entity
-  return permissions[role][entity].includes(action);
+  const rolePerms = permissions[role];
+  if (!rolePerms) return false;
+  const entityPerms = rolePerms[entity];
+  if (!entityPerms) return false;
+  return entityPerms.actions.includes(action);
+}
+export function canEditField(role, entity, field) {
+  const rolePerms = permissions[role];
+  if (!rolePerms) return false;
+  const entityPerms = rolePerms[entity];
+  if (!entityPerms) return false;
+  const fieldsAllowed = entityPerms.fields?.edit || [];
+  return fieldsAllowed.includes("*") || fieldsAllowed.includes(field);
+}
+export function canDelete(role, entity) {
+  const rolePerms = permissions[role];
+  if (!rolePerms) return false;
+  const entityPerms = rolePerms[entity];
+  if (!entityPerms) return false;
+  return entityPerms.actions.includes("delete");
+}
+export function canCreate(role, entity) {
+  const rolePerms = permissions[role];
+  if (!rolePerms) return false;
+  const entityPerms = rolePerms[entity];
+  if (!entityPerms) return false;
+  return entityPerms.actions.includes("create");
+}
+export function canView(role, entity) {
+  const rolePerms = permissions[role];
+  if (!rolePerms) return false;
+  const entityPerms = rolePerms[entity];
+  if (!entityPerms) return false;
+  return entityPerms.actions.includes("view");
 }

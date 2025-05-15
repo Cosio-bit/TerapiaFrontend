@@ -1,11 +1,11 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "/api", // 👈 SOLO /api
+  baseURL: "/api", // Todas las llamadas se harán a rutas que inician con /api
   headers: {
-    "Content-Type": "application/json",
+    "Content-Type": "application/json", // JSON para cuerpo de peticiones
   },
-  withCredentials: true, // Necesario para manejar sesión (cookies)
+  withCredentials: true, // Muy importante para enviar cookies (como JSESSIONID)
 });
 
 export default axiosInstance;

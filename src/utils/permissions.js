@@ -1,24 +1,34 @@
 export const permissions = {
-    admin: {
-      arriendo: ["view", "create", "edit", "delete"],
-      usuario: ["view", "create", "edit", "delete"],
-      cliente: ["view", "create", "edit", "delete"],
-      venta: ["view", "create", "edit", "delete"],
-      // Add more entities here if needed
+  admin: {
+    cliente: {
+      actions: ["view", "create", "edit", "delete"],
+      fields: { edit: ["*"] },
     },
-    editor: {
-      arriendo: ["view", "create", "delete"],
-      usuario: ["view", "create", "delete"],
-      cliente: ["view", "create", "delete"],
-      venta: ["view", "create", "delete"],
-      // Add more entities here if needed
+    arriendo: {
+      actions: ["view", "create", "edit", "delete"],
+      fields: { edit: ["*"] },
     },
-    viewer: {
-      arriendo: ["view"],
-      usuario: ["view"],
-      cliente: ["view"],
-      venta: ["view"],
-      // Add more entities here if needed
-    }
-  };
-  
+  },
+  editor: {
+    cliente: {
+      actions: ["view", "create", "edit"],
+      fields: { edit: ["nombre", "telefono"] },
+    },
+    arriendo: {
+      actions: ["view", "create", "edit"],
+      // Ejemplo campos editables para editor en arriendo,
+      // ajustar según reglas de negocio específicas
+      fields: { edit: ["fecha", "hora_inicio", "hora_fin", "estado"] },
+    },
+  },
+  viewer: {
+    cliente: {
+      actions: ["view"],
+      fields: { edit: [] },
+    },
+    arriendo: {
+      actions: ["view"],
+      fields: { edit: [] },
+    },
+  },
+};

@@ -12,16 +12,21 @@ import {
   MenuItem,
 } from "@mui/material";
 
-const ArriendoFormDialog = ({ 
-  open, 
-  onClose, 
-  onSave, 
-  arriendo, 
-  salas, 
-  clientes, 
+import { useAuth } from "../components/authcontext";
+import { canEditField, can } from "../can";
+
+const ArriendoFormDialog = ({
+  open,
+  onClose,
+  onSave,
+  arriendo,
+  salas,
+  clientes,
   editing,
-  setSnackbar
+  setSnackbar,
 }) => {
+  const { role } = useAuth();
+
   const [formArriendo, setFormArriendo] = useState({
     id_arriendo: null,
     sala: { id_sala: "" },
@@ -36,9 +41,6 @@ const ArriendoFormDialog = ({
   useEffect(() => {
     if (open) {
       if (editing && arriendo) {
-        console.log("🔄 Loading arriendo:", arriendo);
-
-        // Persist `sala` and `cliente` correctly
         const salaData =
           typeof arriendo.sala === "string"
             ? salas.find((s) => s.nombre === arriendo.sala)
@@ -57,12 +59,12 @@ const ArriendoFormDialog = ({
           hora_inicio: arriendo.hora_inicio || "",
           hora_fin: arriendo.hora_fin || "",
           estado: arriendo.estado || "active",
-          monto_pagado: typeof arriendo.monto_pagado === "string"
-            ? parseFloat(arriendo.monto_pagado.replace(/[^0-9.]/g, "")) || 0
-            : arriendo.monto_pagado || 0,
+          monto_pagado:
+            typeof arriendo.monto_pagado === "string"
+              ? parseFloat(arriendo.monto_pagado.replace(/[^0-9.]/g, "")) || 0
+              : arriendo.monto_pagado || 0,
         });
       } else {
-        console.log("🆕 Resetting form for new arriendo");
         setFormArriendo({
           id_arriendo: null,
           sala: { id_sala: "" },
@@ -77,10 +79,40 @@ const ArriendoFormDialog = ({
     }
   }, [open, arriendo, editing, salas, clientes]);
 
+  // Permisos para campos
+  const canEditSala = canEditField(role, "arriendo", "sala");
+  const canEditCliente = canEditField(role, "arriendo", "cliente");
+  const canEditFecha = canEditField(role, "arriendo", "fecha");
+  const canEditHoraInicio = canEditField(role, "arriendo", "hora_inicio");
+  const canEditHoraFin = canEditField(role, "arriendo", "hora_fin");
+  const canEditEstado = canEditField(role, "arriendo", "estado");
+  const canEditMontoPagado = canEditField(role, "arriendo", "monto_pagado");
+
+  // Validar permiso general para crear o editar
+  const canSave = editing ? can(role, "edit", "arriendo") : can(role, "create", "arriendo");
+
   const handleSave = () => {
-    if (!formArriendo.sala.id_sala || !formArriendo.cliente.id_cliente || !formArriendo.fecha || !formArriendo.hora_inicio || !formArriendo.hora_fin) {
-      console.warn("Validation failed: missing required fields.");
-      setSnackbar({ open: true, message: "Complete todos los campos obligatorios.", severity: "error" });
+    if (!canSave) {
+      setSnackbar({
+        open: true,
+        message: "No tienes permiso para realizar esta acción.",
+        severity: "error",
+      });
+      return;
+    }
+
+    if (
+      !formArriendo.sala.id_sala ||
+      !formArriendo.cliente.id_cliente ||
+      !formArriendo.fecha ||
+      !formArriendo.hora_inicio ||
+      !formArriendo.hora_fin
+    ) {
+      setSnackbar({
+        open: true,
+        message: "Complete todos los campos obligatorios.",
+        severity: "error",
+      });
       return;
     }
 
@@ -95,7 +127,6 @@ const ArriendoFormDialog = ({
       monto_pagado: Number(formArriendo.monto_pagado),
     };
 
-    console.log("🚀 Saving arriendo:", JSON.stringify(formattedArriendo, null, 2));
     onSave(formattedArriendo);
   };
 
@@ -104,11 +135,11 @@ const ArriendoFormDialog = ({
       <DialogTitle>{editing ? "Editar Arriendo" : "Crear Arriendo"}</DialogTitle>
       <DialogContent>
         {/* Sala Selection */}
-        <FormControl fullWidth margin="dense">
+        <FormControl fullWidth margin="dense" disabled={!canEditSala}>
           <InputLabel>Sala</InputLabel>
           <Select
             value={formArriendo.sala.id_sala || ""}
-            onChange={(e) => setFormArriendo({ ...formArriendo, sala: { id_sala: e.target.value } })}
+            onChange={(e) => canEditSala && setFormArriendo({ ...formArriendo, sala: { id_sala: e.target.value } })}
           >
             {salas.map((sala) => (
               <MenuItem key={sala.id_sala} value={sala.id_sala}>
@@ -119,11 +150,11 @@ const ArriendoFormDialog = ({
         </FormControl>
 
         {/* Cliente Selection */}
-        <FormControl fullWidth margin="dense">
+        <FormControl fullWidth margin="dense" disabled={!canEditCliente}>
           <InputLabel>Cliente</InputLabel>
           <Select
             value={formArriendo.cliente.id_cliente || ""}
-            onChange={(e) => setFormArriendo({ ...formArriendo, cliente: { id_cliente: e.target.value } })}
+            onChange={(e) => canEditCliente && setFormArriendo({ ...formArriendo, cliente: { id_cliente: e.target.value } })}
           >
             {clientes.map((cliente) => (
               <MenuItem key={cliente.id_cliente} value={cliente.id_cliente}>
@@ -141,7 +172,8 @@ const ArriendoFormDialog = ({
           fullWidth
           InputLabelProps={{ shrink: true }}
           value={formArriendo.fecha}
-          onChange={(e) => setFormArriendo({ ...formArriendo, fecha: e.target.value })}
+          onChange={(e) => canEditFecha && setFormArriendo({ ...formArriendo, fecha: e.target.value })}
+          disabled={!canEditFecha}
         />
 
         {/* Hora Inicio */}
@@ -152,7 +184,8 @@ const ArriendoFormDialog = ({
           fullWidth
           InputLabelProps={{ shrink: true }}
           value={formArriendo.hora_inicio}
-          onChange={(e) => setFormArriendo({ ...formArriendo, hora_inicio: e.target.value })}
+          onChange={(e) => canEditHoraInicio && setFormArriendo({ ...formArriendo, hora_inicio: e.target.value })}
+          disabled={!canEditHoraInicio}
         />
 
         {/* Hora Fin */}
@@ -163,23 +196,23 @@ const ArriendoFormDialog = ({
           fullWidth
           InputLabelProps={{ shrink: true }}
           value={formArriendo.hora_fin}
-          onChange={(e) => setFormArriendo({ ...formArriendo, hora_fin: e.target.value })}
+          onChange={(e) => canEditHoraFin && setFormArriendo({ ...formArriendo, hora_fin: e.target.value })}
+          disabled={!canEditHoraFin}
         />
 
         {/* Estado */}
-        <FormControl fullWidth margin="dense">
-  <InputLabel>Estado</InputLabel>
-  <Select
-    value={formArriendo.estado}
-    onChange={(e) => setFormArriendo({ ...formArriendo, estado: e.target.value })}
-  >
-    <MenuItem value="Pagado y Realizado">Pagado y Realizado</MenuItem>
-    <MenuItem value="Pagado y No Realizado">Pagado y No Realizado</MenuItem>
-    <MenuItem value="No Pagado y Realizado">No Pagado y Realizado</MenuItem>
-    <MenuItem value="No Pagado y No Realizado">No Pagado y No Realizado</MenuItem>
-  </Select>
-</FormControl>
-
+        <FormControl fullWidth margin="dense" disabled={!canEditEstado}>
+          <InputLabel>Estado</InputLabel>
+          <Select
+            value={formArriendo.estado}
+            onChange={(e) => canEditEstado && setFormArriendo({ ...formArriendo, estado: e.target.value })}
+          >
+            <MenuItem value="Pagado y Realizado">Pagado y Realizado</MenuItem>
+            <MenuItem value="Pagado y No Realizado">Pagado y No Realizado</MenuItem>
+            <MenuItem value="No Pagado y Realizado">No Pagado y Realizado</MenuItem>
+            <MenuItem value="No Pagado y No Realizado">No Pagado y No Realizado</MenuItem>
+          </Select>
+        </FormControl>
 
         {/* Monto Pagado */}
         <TextField
@@ -188,15 +221,16 @@ const ArriendoFormDialog = ({
           type="number"
           fullWidth
           value={formArriendo.monto_pagado}
-          onChange={(e) => setFormArriendo({ 
+          onChange={(e) => canEditMontoPagado && setFormArriendo({ 
             ...formArriendo, 
             monto_pagado: e.target.value === "" ? "" : Number(e.target.value) 
           })}
+          disabled={!canEditMontoPagado}
         />
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancelar</Button>
-        <Button onClick={handleSave} variant="contained" color="primary">
+        <Button onClick={handleSave} variant="contained" color="primary" disabled={!canSave}>
           {editing ? "Guardar Cambios" : "Crear Arriendo"}
         </Button>
       </DialogActions>

@@ -5,7 +5,9 @@ import dayjs from "dayjs";
 import { fetchArriendosFiltrado, fetchTotalArriendosFiltrado } from "../api/arriendoEstadisticasApi";
 import { getAllClientes } from "../api/clienteApi";
 import { getAllProveedores } from "../api/proveedorApi";
-import { formatnumber } from '../utils/formatnumber'; // ✅ Añadido
+import { formatnumber } from '../utils/formatnumber';
+import { useAuth } from "../components/authcontext";
+import { can } from "../can";
 
 const estadoOpciones = [
   "Pagado y Realizado",
@@ -15,6 +17,8 @@ const estadoOpciones = [
 ];
 
 const ArriendosTable = ({ onEdit, onDelete }) => {
+  const { role } = useAuth();
+
   const [arriendos, setArriendos] = useState([]);
   const [totalAmount, setTotalAmount] = useState(0);
   const [estado, setEstado] = useState("");
@@ -94,7 +98,7 @@ const ArriendosTable = ({ onEdit, onDelete }) => {
 
   return (
     <Box mt={3}>
-      {/* 🔧 Filtros arriba del DataGrid */}
+      {/* Filtros arriba del DataGrid */}
       <Box
         display="flex"
         flexWrap="wrap"
@@ -200,7 +204,7 @@ const ArriendosTable = ({ onEdit, onDelete }) => {
         </Box>
       </Box>
 
-      {/* 🔧 Tabla de resultados */}
+      {/* Tabla de resultados */}
       <DataGrid
         rows={rows}
         columns={[
@@ -217,12 +221,16 @@ const ArriendosTable = ({ onEdit, onDelete }) => {
             flex: 1,
             renderCell: (params) => (
               <Box display="flex" gap={1}>
-                <Button size="small" onClick={() => onEdit(params.row)}>
-                  Editar
-                </Button>
-                <Button size="small" color="error" onClick={() => onDelete(params.row.id)}>
-                  Eliminar
-                </Button>
+                {can(role, "edit", "arriendo") && (
+                  <Button size="small" onClick={() => onEdit(params.row)}>
+                    Editar
+                  </Button>
+                )}
+                {can(role, "delete", "arriendo") && (
+                  <Button size="small" color="error" onClick={() => onDelete(params.row.id)}>
+                    Eliminar
+                  </Button>
+                )}
               </Box>
             ),
           },

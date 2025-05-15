@@ -1,9 +1,13 @@
 import React from "react";
 import { Box, Button } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
+import { useAuth } from "../components/authcontext";
+import { can } from "../utils/can";
 
 const ClientesTable = ({ clientes, onEdit, onDelete }) => {
-  // Ensure clientes is always an array
+  const { role } = useAuth();
+
+  // Asegurarse que clientes es un arreglo
   const clienteRows = Array.isArray(clientes) ? clientes : [];
 
   return (
@@ -11,7 +15,7 @@ const ClientesTable = ({ clientes, onEdit, onDelete }) => {
       <DataGrid
         rows={clienteRows.map((cliente) => ({
           ...cliente,
-          id: cliente.id_cliente, // Ensure correct ID mapping for DataGrid
+          id: cliente.id_cliente, // ID correcto para DataGrid
         }))}
         columns={[
           {
@@ -32,8 +36,16 @@ const ClientesTable = ({ clientes, onEdit, onDelete }) => {
             flex: 1,
             renderCell: (params) => (
               <Box display="flex" gap={1}>
-                <Button size="small" onClick={() => onEdit(params.row)}>Editar</Button>
-                <Button size="small" color="error" onClick={() => onDelete(params.row.id)}>Eliminar</Button>
+                {can(role, "edit", "cliente") && (
+                  <Button size="small" onClick={() => onEdit(params.row)}>
+                    Editar
+                  </Button>
+                )}
+                {can(role, "delete", "cliente") && (
+                  <Button size="small" color="error" onClick={() => onDelete(params.row.id)}>
+                    Eliminar
+                  </Button>
+                )}
               </Box>
             ),
           },

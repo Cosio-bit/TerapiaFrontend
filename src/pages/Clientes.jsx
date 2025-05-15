@@ -5,7 +5,13 @@ import { getAllUsuarios } from "../api/usuarioApi";
 import ClientesTable from "../components/ClientesTable";
 import ClienteFormDialog from "../components/ClienteFormDialog";
 
+import { useAuth } from "../components/authcontext";
+import { can } from "../utils/can";
+
 const Clientes = () => {
+  const { role } = useAuth();
+  console.log("role", role);
+
   const [clientes, setClientes] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
   const [currentCliente, setCurrentCliente] = useState(null);
@@ -37,6 +43,15 @@ const Clientes = () => {
   };
 
   const handleSaveCliente = async (cliente) => {
+    if (editing && !can(role, "edit", "cliente")) {
+      setSnackbar({ open: true, message: "No tiene permiso para editar clientes.", severity: "error" });
+      return;
+    }
+    if (!editing && !can(role, "create", "cliente")) {
+      setSnackbar({ open: true, message: "No tiene permiso para crear clientes.", severity: "error" });
+      return;
+    }
+
     try {
       if (editing) {
         await updateCliente(currentCliente.id_cliente, cliente);
@@ -62,6 +77,11 @@ const Clientes = () => {
   };
 
   const handleDeleteCliente = async (id) => {
+    if (!can(role, "delete", "cliente")) {
+      setSnackbar({ open: true, message: "No tiene permiso para eliminar clientes.", severity: "error" });
+      return;
+    }
+
     try {
       await deleteCliente(id);
       fetchClientes();
@@ -71,24 +91,37 @@ const Clientes = () => {
     }
   };
 
+  console.log("can admin create cliente?", can("admin", "create", "cliente"));
+  console.log("can viewer create cliente?", can("viewer", "create", "cliente"));
+  console.log("current role:", role);
+  console.log("clientes", clientes);
+
   return (
     <Box p={4}>
       <Typography variant="h4" gutterBottom>
         Gestión de Clientes
       </Typography>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => {
-          setEditing(false);
-          setCurrentCliente(null);
-          setOpenDialog(true);
-        }}
-      >
-        Crear Cliente
-      </Button>
 
-      <ClientesTable clientes={clientes} onEdit={handleEditCliente} onDelete={handleDeleteCliente} />
+      {can(role, "create", "cliente") && (
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            setEditing(false);
+            setCurrentCliente(null);
+            setOpenDialog(true);
+          }}
+          style={{ marginBottom: 16 }}
+        >
+          Crear Cliente
+        </Button>
+      )}
+
+      <ClientesTable
+        clientes={clientes}
+        onEdit={handleEditCliente}
+        onDelete={handleDeleteCliente}
+      />
 
       <ClienteFormDialog
         open={openDialog}
@@ -96,7 +129,7 @@ const Clientes = () => {
         onSave={handleSaveCliente}
         cliente={currentCliente}
         usuarios={usuarios}
-        setUsuarios={setUsuarios}  // ✅ AHORA SÍ ESTÁ CORRECTAMENTE PASADO
+        setUsuarios={setUsuarios}
         editing={editing}
       />
 

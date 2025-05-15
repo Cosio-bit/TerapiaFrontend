@@ -1,32 +1,34 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { login } from "../api/loginApi"; // Ajusta si tu path es distinto
-import { getSession } from "../api/loginApi"; // Asegúrate de que esta función esté correctamente implementada
+import { login, getSession } from "../api/loginApi";
+import { useAuth } from "../components/authcontext";
 
 function LoginPage() {
+  const { setRole } = useAuth();
   const [nombre, setNombre] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);  // Indicador de carga
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);  // Iniciar la carga
-    setError(null);  // Limpiar cualquier error previo
+    setIsLoading(true);
+    setError(null);
+
     try {
       await login(nombre, password);
-      // Verifica que la sesión esté activa
-      const session = await getSession(); // Este paso es crucial para obtener la información de la sesión
-      if (session.role) {
-        navigate("/"); // Si el role está disponible, redirigir a Home o Dashboard
+      const session = await getSession();
+      if (session.role && typeof session.role === "string" && session.role.trim() !== "") {
+        setRole(session.role);
+        navigate("/");
       } else {
         setError("Nombre o contraseña incorrecta.");
       }
     } catch (err) {
-      setError("Nombre o contraseña incorrecta.");
+      setError(err.response?.data || "Nombre o contraseña incorrecta.");
     } finally {
-      setIsLoading(false);  // Finalizar la carga
+      setIsLoading(false);
     }
   };
 
@@ -42,6 +44,7 @@ function LoginPage() {
           onChange={(e) => setNombre(e.target.value)}
           style={styles.input}
           required
+          autoFocus
         />
         <input
           type="password"
@@ -52,16 +55,19 @@ function LoginPage() {
           required
         />
         <button type="submit" style={styles.button} disabled={isLoading}>
-          {isLoading ? "Cargando..." : "Entrar"}  {/* Mostrar 'Cargando...' mientras se realiza el login */}
+          {isLoading ? "Cargando..." : "Entrar"}
         </button>
 
-        {error && <p style={styles.error}>{error}</p>}
+        {error && (
+          <p style={styles.error} aria-live="assertive">
+            {error}
+          </p>
+        )}
       </form>
     </div>
   );
 }
 
-// Estilos en JS para no preocuparse por CSS externo
 const styles = {
   container: {
     minHeight: "100vh",

@@ -1,10 +1,9 @@
-import axiosInstance from "./axiosConfig"; // adjust path if needed
-
+import axiosInstance from "./axiosConfig";
 /**
- * Login with role name and password
- * @param {string} nombre - Role name (like "admin", "viewer", etc.)
- * @param {string} password - Password
- * @returns {Promise<string>} Backend login response (string)
+ * Realiza login con nombre de usuario y contraseña.
+ * @param {string} nombre - Nombre de usuario
+ * @param {string} password - Contraseña
+ * @returns {Promise<string>} Mensaje de éxito o error del backend
  */
 export const login = async (nombre, password) => {
   try {
@@ -17,8 +16,8 @@ export const login = async (nombre, password) => {
 };
 
 /**
- * Logout the current session
- * @returns {Promise<string>} Backend logout response (string)
+ * Cierra la sesión actual.
+ * @returns {Promise<string>} Mensaje de éxito del backend
  */
 export const logout = async () => {
   try {
@@ -31,15 +30,21 @@ export const logout = async () => {
 };
 
 /**
- * Get current session info
- * @returns {Promise<{ role: string | null }>} Current session data
+ * Consulta la sesión actual para obtener el rol del usuario autenticado.
+ * @returns {Promise<{ role: string | null }>} Objeto con rol o null si no autenticado
  */
 export const getSession = async () => {
   try {
     const response = await axiosInstance.get("/auth/session");
-    return response.data;  // { role: "admin" } or { role: null }
+    const roleRaw = response.data.role;
+
+    // Opcional: normalizar el rol recibido para evitar inconsistencias
+    const role = roleRaw ? roleRaw.toLowerCase() : null;
+
+    return { ...response.data, role };
   } catch (error) {
     console.error("Session check error:", error.response?.data || error.message);
-    return { role: null };  // Si la sesión falla, devuelve null
+    return { role: null };
   }
 };
+

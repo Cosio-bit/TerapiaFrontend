@@ -15,7 +15,10 @@ import {
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import DeleteIcon from "@mui/icons-material/Delete";
 import UsuarioFormDialog from "./UsuarioFormDialog";
-import { createUsuario } from "../api/usuarioApi"; // ✅ Importar para guardar nuevo usuario
+import { createUsuario } from "../api/usuarioApi";
+import { useAuth } from "../components/authcontext";
+import { canEditField } from "../utils/can";
+import { can } from "../utils/can";
 
 const ClienteFormDialog = ({
   open,
@@ -26,6 +29,8 @@ const ClienteFormDialog = ({
   setUsuarios,
   editing,
 }) => {
+  const { role } = useAuth();
+
   const [formCliente, setFormCliente] = useState({
     usuarioSeleccionado: "",
     fecha_registro: "",
@@ -35,7 +40,6 @@ const ClienteFormDialog = ({
 
   const [errors, setErrors] = useState({});
   const [openUsuarioDialog, setOpenUsuarioDialog] = useState(false);
-  const [nuevoUsuarioTemp, setNuevoUsuarioTemp] = useState(null); // ⚠️ Para pasar datos del nuevo usuario
 
   useEffect(() => {
     if (cliente) {
@@ -98,16 +102,22 @@ const ClienteFormDialog = ({
     setFormCliente({ ...formCliente, fichasSalud: newFichas });
   };
 
-  // ✅ Guardar el usuario directamente desde el formulario del cliente
+  // Permisos para editar campos
+  const canEditUsuarioSeleccionado = canEditField(role, "cliente", "usuarioSeleccionado");
+  const canEditFechaRegistro = canEditField(role, "cliente", "fecha_registro");
+  const canEditSaldo = canEditField(role, "cliente", "saldo");
+  // Para fichas de salud asumo permisos totales, si quieres puedes añadir validación también
+
+  // Guardar usuario desde formulario cliente
   const handleUsuarioCreado = async (usuarioTemp) => {
     try {
-      const nuevoUsuario = await createUsuario(usuarioTemp); // 🔁 Guardar realmente en la base de datos
-      setUsuarios((prev) => [...prev, nuevoUsuario]);        // ✅ Agregar a lista local
+      const nuevoUsuario = await createUsuario(usuarioTemp);
+      setUsuarios((prev) => [...prev, nuevoUsuario]);
       setFormCliente((prev) => ({
         ...prev,
-        usuarioSeleccionado: String(nuevoUsuario.id_usuario), // ✅ Seleccionar automáticamente
+        usuarioSeleccionado: String(nuevoUsuario.id_usuario),
       }));
-      setOpenUsuarioDialog(false);                            // ✅ Cerrar modal
+      setOpenUsuarioDialog(false);
     } catch (error) {
       console.error("Error al crear usuario desde ClienteFormDialog:", error);
     }
@@ -118,12 +128,11 @@ const ClienteFormDialog = ({
       <Dialog open={open} onClose={onClose}>
         <DialogTitle>{editing ? "Editar Cliente" : "Crear Cliente"}</DialogTitle>
         <DialogContent>
-          {/* Select de usuario existente */}
-          <FormControl fullWidth margin="dense">
+          <FormControl fullWidth margin="dense" disabled={!canEditUsuarioSeleccionado}>
             <InputLabel>Usuario</InputLabel>
             <Select
               value={formCliente.usuarioSeleccionado}
-              onChange={(e) => setFormCliente({ ...formCliente, usuarioSeleccionado: e.target.value })}
+              onChange={(e) => canEditUsuarioSeleccionado && setFormCliente({ ...formCliente, usuarioSeleccionado: e.target.value })}
               error={!!errors.usuarioSeleccionado}
             >
               {usuarios.map((usuario) => (
@@ -134,12 +143,12 @@ const ClienteFormDialog = ({
             </Select>
           </FormControl>
 
-          {/* Botón para abrir el formulario de usuario */}
           <Button
             onClick={() => setOpenUsuarioDialog(true)}
             variant="outlined"
             size="small"
             style={{ marginTop: 6, marginBottom: 12 }}
+            disabled={!canEditUsuarioSeleccionado}
           >
             Crear nuevo usuario
           </Button>
@@ -150,10 +159,11 @@ const ClienteFormDialog = ({
             type="date"
             fullWidth
             value={formCliente.fecha_registro}
-            onChange={(e) => setFormCliente({ ...formCliente, fecha_registro: e.target.value })}
+            onChange={(e) => canEditFechaRegistro && setFormCliente({ ...formCliente, fecha_registro: e.target.value })}
             error={!!errors.fecha_registro}
             helperText={errors.fecha_registro}
             InputLabelProps={{ shrink: true }}
+            disabled={!canEditFechaRegistro}
           />
 
           <TextField
@@ -162,10 +172,10 @@ const ClienteFormDialog = ({
             type="number"
             fullWidth
             value={formCliente.saldo}
-            onChange={(e) => setFormCliente({ ...formCliente, saldo: e.target.value })}
+            onChange={(e) => canEditSaldo && setFormCliente({ ...formCliente, saldo: e.target.value })}
+            disabled={!canEditSaldo}
           />
 
-          {/* Fichas Salud */}
           <div>
             <h4>Fichas de Salud</h4>
             {formCliente.fichasSalud.map((ficha, index) => (
@@ -175,11 +185,13 @@ const ClienteFormDialog = ({
                   type="date"
                   value={ficha.fecha}
                   onChange={(e) => handleFichaChange(index, "fecha", e.target.value)}
+                  // aquí puedes añadir control de permisos si quieres
                 />
                 <TextField
                   label="Descripción"
                   value={ficha.descripcion}
                   onChange={(e) => handleFichaChange(index, "descripcion", e.target.value)}
+                  // aquí puedes añadir control de permisos si quieres
                 />
                 <IconButton onClick={() => handleDeleteFicha(index)} color="error">
                   <DeleteIcon />
@@ -193,13 +205,20 @@ const ClienteFormDialog = ({
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose}>Cancelar</Button>
-          <Button onClick={handleSave} variant="contained" color="primary">
+          <Button onClick={handleSave} variant="contained" color="primary" disabled={
+            // Deshabilita guardar si no puede editar nada
+            !(
+              canEditUsuarioSeleccionado ||
+              canEditFechaRegistro ||
+              canEditSaldo ||
+              formCliente.fichasSalud.length > 0
+            )
+          }>
             {editing ? "Guardar Cambios" : "Crear Cliente"}
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Modal de creación de usuario */}
       <UsuarioFormDialog
         open={openUsuarioDialog}
         onClose={() => setOpenUsuarioDialog(false)}
