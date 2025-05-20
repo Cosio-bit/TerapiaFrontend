@@ -1,30 +1,14 @@
-import React, { useEffect, useState } from "react";
-import { Typography, Button, Box, Container, Grid } from "@mui/material";
-import { Link } from "react-router-dom";
-import { fetchImage } from "../utils/unsplash"; // Importa la función desde utils
+import React from "react"
+import { Typography, Button, Box, Container, Grid } from "@mui/material"
+import { Link } from "react-router-dom"
+import fondoLanding from "../assets/landing-bg.jpg" // imagen estática local
 
 function LandingPage() {
-  const [unsplashImage, setUnsplashImage] = useState(""); // Estado para la imagen dinámica
-
-  useEffect(() => {
-    const loadImage = async () => {
-      try {
-        // Puedes cambiar "therapy" por otro término relevante para buscar imágenes
-        const imageUrl = await fetchImage("random"); 
-        setUnsplashImage(imageUrl);
-      } catch (error) {
-        console.error("Error fetching Unsplash image:", error);
-      }
-    };
-
-    loadImage();
-  }, []);
-
   return (
     <Box
       sx={{
         minHeight: "100vh",
-        background: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/landing-bg.jpg')`,
+        background: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${fondoLanding})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
         display: "flex",
@@ -40,8 +24,8 @@ function LandingPage() {
               variant="h3"
               component="h1"
               sx={{
-                fontFamily: "'Montserrat', sans-serif",
-                fontWeight: "700",
+                fontFamily: "'Noto Sans', sans-serif",
+                fontWeight: 700,
                 color: "white",
                 marginBottom: "20px",
               }}
@@ -52,13 +36,13 @@ function LandingPage() {
               variant="h5"
               component="p"
               sx={{
-                fontFamily: "'Montserrat', sans-serif",
-                fontWeight: "400",
-                color: "rgba(255, 255, 255, 0.8)",
+                fontFamily: "'Noto Sans', sans-serif",
+                fontWeight: 400,
+                color: "rgba(255, 255, 255, 0.85)",
                 marginBottom: "30px",
               }}
             >
-              Manejador de centro terapia para gestionar clientes, profesionales, terapias y sesiones.
+              Manejador de centro terapéutico para gestionar clientes, profesionales, terapias y sesiones.
             </Typography>
             <Button
               component={Link}
@@ -66,16 +50,15 @@ function LandingPage() {
               variant="contained"
               size="large"
               sx={{
-                backgroundColor: "rgba(0, 123, 255, 0.9)",
+                backgroundColor: "#007bff",
                 color: "white",
-                padding: "10px 20px",
+                padding: "10px 24px",
                 borderRadius: "50px",
                 textTransform: "none",
-                fontFamily: "'Montserrat', sans-serif",
-                fontWeight: "600",
-                fontSize: "1.2rem",
+                fontWeight: 600,
+                fontSize: "1.1rem",
                 "&:hover": {
-                  backgroundColor: "rgba(0, 123, 255, 0.7)",
+                  backgroundColor: "#0056b3",
                 },
               }}
             >
@@ -83,38 +66,24 @@ function LandingPage() {
             </Button>
           </Grid>
 
-          {/* Imagen dinámica de Unsplash */}
+          {/* Imagen fija decorativa */}
           <Grid item xs={12} md={6}>
-            {unsplashImage ? (
-              <Box
-                component="img"
-                src={unsplashImage}
-                alt="Terapias"
-                sx={{
-                  width: "100%",
-                  maxWidth: "500px",
-                  borderRadius: "20px",
-                  boxShadow: "0px 10px 20px rgba(0, 0, 0, 0.3)",
-                }}
-              />
-            ) : (
-              <Typography
-                variant="h6"
-                color="white"
-                sx={{
-                  fontFamily: "'Montserrat', sans-serif",
-                  fontWeight: "400",
-                  textAlign: "center",
-                }}
-              >
-                Cargando imagen...
-              </Typography>
-            )}
+            <Box
+              component="img"
+              src={fondoLanding}
+              alt="Centro Terapia"
+              sx={{
+                width: "100%",
+                maxWidth: "500px",
+                borderRadius: "20px",
+                boxShadow: "0px 10px 20px rgba(0, 0, 0, 0.3)",
+              }}
+            />
           </Grid>
         </Grid>
       </Container>
     </Box>
-  );
+  )
 }
 
-export default LandingPage;
+export default LandingPage
