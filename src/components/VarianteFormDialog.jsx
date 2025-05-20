@@ -8,7 +8,7 @@ import {
   Button,
 } from "@mui/material";
 import { useAuth } from "../components/authcontext";
-import { canEditField } from "../can";
+import { canEditField } from "../utils/can";
 
 const VarianteFormDialog = ({ open, onClose, onSave, variante, editing }) => {
   const { role } = useAuth();
@@ -35,6 +35,11 @@ const VarianteFormDialog = ({ open, onClose, onSave, variante, editing }) => {
     setErrors({});
   }, [variante]);
 
+  const canNombre = canEditField(role, "variante", "nombreVariante");
+  const canPrecio = canEditField(role, "variante", "precio");
+  const canDuracion = canEditField(role, "variante", "duracionMinutos");
+  const canCantidad = canEditField(role, "variante", "cantidadSesiones");
+
   const validateForm = () => {
     const newErrors = {};
     if (!formVariante.nombreVariante) newErrors.nombreVariante = "El nombre es obligatorio.";
@@ -58,61 +63,58 @@ const VarianteFormDialog = ({ open, onClose, onSave, variante, editing }) => {
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>{editing ? "Editar Variante" : "Crear Variante"}</DialogTitle>
       <DialogContent>
-        {canEditField(role, "variante", "nombreVariante") && (
-          <TextField
-            margin="dense"
-            label="Nombre de la Variante"
-            fullWidth
-            value={formVariante.nombreVariante}
-            onChange={(e) => setFormVariante({ ...formVariante, nombreVariante: e.target.value })}
-            error={!!errors.nombreVariante}
-            helperText={errors.nombreVariante}
-          />
-        )}
-        {canEditField(role, "variante", "precio") && (
-          <TextField
-            margin="dense"
-            label="Precio"
-            type="number"
-            fullWidth
-            value={formVariante.precio}
-            onChange={(e) => setFormVariante({ ...formVariante, precio: parseFloat(e.target.value) })}
-            error={!!errors.precio}
-            helperText={errors.precio}
-          />
-        )}
-        {canEditField(role, "variante", "duracionMinutos") && (
-          <TextField
-            margin="dense"
-            label="Duración (minutos)"
-            type="number"
-            fullWidth
-            value={formVariante.duracionMinutos}
-            onChange={(e) =>
-              setFormVariante({ ...formVariante, duracionMinutos: parseInt(e.target.value, 10) })
-            }
-            error={!!errors.duracionMinutos}
-            helperText={errors.duracionMinutos}
-          />
-        )}
-        {canEditField(role, "variante", "cantidadSesiones") && (
-          <TextField
-            margin="dense"
-            label="Cantidad de Sesiones"
-            type="number"
-            fullWidth
-            value={formVariante.cantidadSesiones}
-            onChange={(e) =>
-              setFormVariante({ ...formVariante, cantidadSesiones: parseInt(e.target.value, 10) })
-            }
-            error={!!errors.cantidadSesiones}
-            helperText={errors.cantidadSesiones}
-          />
-        )}
+        <TextField
+          margin="dense"
+          label="Nombre de la Variante"
+          fullWidth
+          value={formVariante.nombreVariante}
+          onChange={(e) => canNombre && setFormVariante({ ...formVariante, nombreVariante: e.target.value })}
+          error={!!errors.nombreVariante}
+          helperText={errors.nombreVariante}
+          disabled={!canNombre}
+        />
+        <TextField
+          margin="dense"
+          label="Precio"
+          type="number"
+          fullWidth
+          value={formVariante.precio}
+          onChange={(e) => canPrecio && setFormVariante({ ...formVariante, precio: parseFloat(e.target.value) })}
+          error={!!errors.precio}
+          helperText={errors.precio}
+          disabled={!canPrecio}
+        />
+        <TextField
+          margin="dense"
+          label="Duración (minutos)"
+          type="number"
+          fullWidth
+          value={formVariante.duracionMinutos}
+          onChange={(e) => canDuracion && setFormVariante({ ...formVariante, duracionMinutos: parseInt(e.target.value, 10) })}
+          error={!!errors.duracionMinutos}
+          helperText={errors.duracionMinutos}
+          disabled={!canDuracion}
+        />
+        <TextField
+          margin="dense"
+          label="Cantidad de Sesiones"
+          type="number"
+          fullWidth
+          value={formVariante.cantidadSesiones}
+          onChange={(e) => canCantidad && setFormVariante({ ...formVariante, cantidadSesiones: parseInt(e.target.value, 10) })}
+          error={!!errors.cantidadSesiones}
+          helperText={errors.cantidadSesiones}
+          disabled={!canCantidad}
+        />
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancelar</Button>
-        <Button onClick={handleSave} variant="contained" color="primary">
+        <Button
+          onClick={handleSave}
+          variant="contained"
+          color="primary"
+          disabled={!(canNombre || canPrecio || canDuracion || canCantidad)}
+        >
           {editing ? "Guardar Cambios" : "Crear Variante"}
         </Button>
       </DialogActions>

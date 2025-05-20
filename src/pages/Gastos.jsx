@@ -10,7 +10,7 @@ import { getAllProveedores } from "../api/proveedorApi";
 import GastosTable from "../components/GastosTable";
 import GastoFormDialog from "../components/GastoFormDialog";
 import { useAuth } from "../components/authcontext";
-import { can } from "../can";
+import { can } from "../utils/can";
 
 const Gastos = () => {
   const { role } = useAuth();

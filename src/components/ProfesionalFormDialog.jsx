@@ -14,7 +14,7 @@ import {
 import UsuarioFormDialog from "./UsuarioFormDialog";
 import { createUsuario } from "../api/usuarioApi";
 import { useAuth } from "../components/authcontext";
-import { can, canEditField } from "../can";
+import { canEditField } from "../utils/can";
 
 const ProfesionalFormDialog = ({
   open,
@@ -24,7 +24,6 @@ const ProfesionalFormDialog = ({
   usuarios,
   setUsuarios,
   editing,
-  setSnackbar,
 }) => {
   const { role } = useAuth();
 
@@ -61,27 +60,18 @@ const ProfesionalFormDialog = ({
     }
   }, [profesional]);
 
-  const canSave = editing ? can(role, "edit", "profesional") : can(role, "create", "profesional");
+  const canEditUsuario = canEditField(role, "profesional", "id_usuario");
+  const canEditEspecialidad = canEditField(role, "profesional", "especialidad");
+  const canEditCertificaciones = canEditField(role, "profesional", "certificaciones");
+  const canEditDisponibilidad = canEditField(role, "profesional", "disponibilidad");
+  const canEditBanco = canEditField(role, "profesional", "banco");
+  const canEditCuenta = canEditField(role, "profesional", "nro_cuenta_bancaria");
 
   const handleSave = () => {
-    if (!canSave) {
-      setSnackbar?.({
-        open: true,
-        message: "No tienes permiso para realizar esta acción.",
-        severity: "error",
-      });
-      return;
-    }
-
     if (!formProfesional.id_usuario) {
-      setSnackbar?.({
-        open: true,
-        message: "Debe seleccionar un usuario.",
-        severity: "error",
-      });
+      console.error("Error: Usuario no seleccionado.");
       return;
     }
-
     onSave(formProfesional);
   };
 
@@ -95,7 +85,7 @@ const ProfesionalFormDialog = ({
       }));
       setOpenUsuarioDialog(false);
     } catch (error) {
-      console.error("Error al crear usuario:", error);
+      console.error("Error al crear usuario desde ProfesionalFormDialog:", error);
     }
   };
 
@@ -104,14 +94,12 @@ const ProfesionalFormDialog = ({
       <Dialog open={open} onClose={onClose}>
         <DialogTitle>{editing ? "Editar Profesional" : "Crear Profesional"}</DialogTitle>
         <DialogContent>
-          <FormControl fullWidth margin="dense" disabled={!canEditField(role, "profesional", "id_usuario")}>
+          <FormControl fullWidth margin="dense" disabled={!canEditUsuario}>
             <InputLabel id="usuario-label">Usuario</InputLabel>
             <Select
               labelId="usuario-label"
               value={formProfesional.id_usuario}
-              onChange={(e) =>
-                setFormProfesional({ ...formProfesional, id_usuario: e.target.value })
-              }
+              onChange={(e) => canEditUsuario && setFormProfesional({ ...formProfesional, id_usuario: e.target.value })}
             >
               {usuarios.map((usuario) => (
                 <MenuItem key={usuario.id_usuario} value={usuario.id_usuario}>
@@ -121,34 +109,68 @@ const ProfesionalFormDialog = ({
             </Select>
           </FormControl>
 
-          {canEditField(role, "profesional", "id_usuario") && (
-            <Button
-              onClick={() => setOpenUsuarioDialog(true)}
-              variant="outlined"
-              size="small"
-              style={{ marginTop: 6, marginBottom: 12 }}
-            >
-              Crear nuevo usuario
-            </Button>
-          )}
+          <Button
+            onClick={() => setOpenUsuarioDialog(true)}
+            variant="outlined"
+            size="small"
+            style={{ marginTop: 6, marginBottom: 12 }}
+            disabled={!canEditUsuario}
+          >
+            Crear nuevo usuario
+          </Button>
 
-          {["especialidad", "certificaciones", "disponibilidad", "banco", "nro_cuenta_bancaria"].map((field) => (
-            <TextField
-              key={field}
-              label={field[0].toUpperCase() + field.slice(1).replace(/_/g, " ")}
-              fullWidth
-              margin="dense"
-              value={formProfesional[field]}
-              onChange={(e) =>
-                setFormProfesional({ ...formProfesional, [field]: e.target.value })
-              }
-              disabled={!canEditField(role, "profesional", field)}
-            />
-          ))}
+          <TextField
+            label="Especialidad"
+            fullWidth
+            margin="dense"
+            value={formProfesional.especialidad}
+            onChange={(e) => canEditEspecialidad && setFormProfesional({ ...formProfesional, especialidad: e.target.value })}
+            disabled={!canEditEspecialidad}
+          />
+          <TextField
+            label="Certificaciones"
+            fullWidth
+            margin="dense"
+            value={formProfesional.certificaciones}
+            onChange={(e) => canEditCertificaciones && setFormProfesional({ ...formProfesional, certificaciones: e.target.value })}
+            disabled={!canEditCertificaciones}
+          />
+          <TextField
+            label="Disponibilidad"
+            fullWidth
+            margin="dense"
+            value={formProfesional.disponibilidad}
+            onChange={(e) => canEditDisponibilidad && setFormProfesional({ ...formProfesional, disponibilidad: e.target.value })}
+            disabled={!canEditDisponibilidad}
+          />
+          <TextField
+            label="Banco"
+            fullWidth
+            margin="dense"
+            value={formProfesional.banco}
+            onChange={(e) => canEditBanco && setFormProfesional({ ...formProfesional, banco: e.target.value })}
+            disabled={!canEditBanco}
+          />
+          <TextField
+            label="Número de Cuenta Bancaria"
+            fullWidth
+            margin="dense"
+            value={formProfesional.nro_cuenta_bancaria}
+            onChange={(e) => canEditCuenta && setFormProfesional({
+              ...formProfesional,
+              nro_cuenta_bancaria: e.target.value,
+            })}
+            disabled={!canEditCuenta}
+          />
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose}>Cancelar</Button>
-          <Button onClick={handleSave} variant="contained" color="primary" disabled={!canSave}>
+          <Button
+            onClick={handleSave}
+            variant="contained"
+            color="primary"
+            disabled={!(canEditUsuario || canEditEspecialidad || canEditCertificaciones || canEditDisponibilidad || canEditBanco || canEditCuenta)}
+          >
             {editing ? "Guardar Cambios" : "Crear Profesional"}
           </Button>
         </DialogActions>

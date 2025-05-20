@@ -14,7 +14,7 @@ import {
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { useAuth } from "../components/authcontext";
-import { canEditField } from "../can"; // ✅ para control por campo
+import { canEditField } from "../utils/can";
 
 dayjs.extend(customParseFormat);
 
@@ -64,6 +64,11 @@ const SesionFormDialog = ({ open, onClose, onSave, sesion, profesionales, editin
     }
   }, [open, sesion, editing, profesionales]);
 
+  const canEditFecha = canEditField(role, "sesion", "fecha_hora");
+  const canEditPrecio = canEditField(role, "sesion", "precio");
+  const canEditEstado = canEditField(role, "sesion", "estado");
+  const canEditProfesional = canEditField(role, "sesion", "profesional");
+
   const handleSave = () => {
     const formattedSesion = {
       id_sesion: formSesion.id_sesion,
@@ -80,62 +85,58 @@ const SesionFormDialog = ({ open, onClose, onSave, sesion, profesionales, editin
     <Dialog open={open} onClose={onClose} key={formSesion.id_sesion || "new"}>
       <DialogTitle>{editing ? "Editar Sesión" : "Crear Sesión"}</DialogTitle>
       <DialogContent>
-        {canEditField(role, "sesion", "fecha_hora") && (
-          <TextField
-            margin="dense"
-            label="Fecha y Hora"
-            type="datetime-local"
-            fullWidth
-            InputLabelProps={{ shrink: true }}
-            value={formSesion.fecha_hora}
-            onChange={(e) => setFormSesion({ ...formSesion, fecha_hora: e.target.value })}
-          />
-        )}
-        {canEditField(role, "sesion", "precio") && (
-          <TextField
-            margin="dense"
-            label="Precio"
-            type="number"
-            fullWidth
-            value={formSesion.precio}
-            onChange={(e) =>
-              setFormSesion({ ...formSesion, precio: parseFloat(e.target.value) || "" })
-            }
-          />
-        )}
-        {canEditField(role, "sesion", "estado") && (
-          <TextField
-            margin="dense"
-            label="Estado"
-            fullWidth
-            value={formSesion.estado}
-            onChange={(e) => setFormSesion({ ...formSesion, estado: e.target.value })}
-          />
-        )}
-        {canEditField(role, "sesion", "profesional") && (
-          <FormControl fullWidth margin="dense">
-            <InputLabel>Profesional</InputLabel>
-            <Select
-              value={formSesion.profesional.id_profesional || ""}
-              onChange={(e) =>
-                setFormSesion({
-                  ...formSesion,
-                  profesional: { id_profesional: e.target.value },
-                })
-              }
-            >
-              {profesionales.map((profesional) => (
-                <MenuItem key={profesional.id_profesional} value={profesional.id_profesional}>
-                  {profesional.usuario.nombre}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        )}
+        <TextField
+          margin="dense"
+          label="Fecha y Hora"
+          type="datetime-local"
+          fullWidth
+          InputLabelProps={{ shrink: true }}
+          value={formSesion.fecha_hora}
+          onChange={(e) => canEditFecha && setFormSesion({ ...formSesion, fecha_hora: e.target.value })}
+          disabled={!canEditFecha}
+        />
+        <TextField
+          margin="dense"
+          label="Precio"
+          type="number"
+          fullWidth
+          value={formSesion.precio}
+          onChange={(e) => canEditPrecio && setFormSesion({ ...formSesion, precio: parseFloat(e.target.value) || "" })}
+          disabled={!canEditPrecio}
+        />
+        <TextField
+          margin="dense"
+          label="Estado"
+          fullWidth
+          value={formSesion.estado}
+          onChange={(e) => canEditEstado && setFormSesion({ ...formSesion, estado: e.target.value })}
+          disabled={!canEditEstado}
+        />
+        <FormControl fullWidth margin="dense" disabled={!canEditProfesional}>
+          <InputLabel>Profesional</InputLabel>
+          <Select
+            value={formSesion.profesional.id_profesional || ""}
+            onChange={(e) => canEditProfesional && setFormSesion({
+              ...formSesion,
+              profesional: { id_profesional: e.target.value },
+            })}
+          >
+            {profesionales.map((profesional) => (
+              <MenuItem key={profesional.id_profesional} value={profesional.id_profesional}>
+                {profesional.usuario.nombre}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancelar</Button>
-        <Button onClick={handleSave} variant="contained" color="primary">
+        <Button
+          onClick={handleSave}
+          variant="contained"
+          color="primary"
+          disabled={!(canEditFecha || canEditPrecio || canEditEstado || canEditProfesional)}
+        >
           {editing ? "Guardar Cambios" : "Crear Sesión"}
         </Button>
       </DialogActions>

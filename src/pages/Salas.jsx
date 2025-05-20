@@ -10,7 +10,7 @@ import { getAllProveedores } from "../api/proveedorApi";
 import SalasTable from "../components/SalasTable";
 import SalaFormDialog from "../components/SalaFormDialog";
 import { useAuth } from "../components/authcontext";
-import { can } from "../can"; // ✅ Control de permisos
+import { can } from "../utils/can";
 
 const Salas = () => {
   const { role } = useAuth();

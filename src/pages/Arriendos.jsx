@@ -12,7 +12,7 @@ import ArriendosTable from "../components/ArriendosTable";
 import ArriendoFormDialog from "../components/ArriendoFormDialog";
 
 import { useAuth } from "../components/authcontext";
-import { can } from "../can";
+import { can } from "../utils/can";
 
 const Arriendos = () => {
   const { role } = useAuth();

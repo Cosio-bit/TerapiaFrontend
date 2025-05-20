@@ -5,7 +5,7 @@ import { getAllProfesionales } from "../api/profesionalApi";
 import SesionesTable from "../components/SesionesTable";
 import SesionFormDialog from "../components/SesionFormDialog";
 import { useAuth } from "../components/authcontext";
-import { can } from "../can"; // ✅ Control de permisos
+import { can } from "../utils/can";
 
 const Sesiones = () => {
   const { role } = useAuth();

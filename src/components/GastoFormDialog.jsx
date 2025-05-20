@@ -4,7 +4,7 @@ import {
   TextField, Button, FormControl, InputLabel, Select, MenuItem
 } from "@mui/material";
 import { useAuth } from "../components/authcontext";
-import { can, canEditField } from "../can";
+import { can, canEditField } from "../utils/can";
 
 const GastoFormDialog = ({
   open,

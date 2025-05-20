@@ -10,7 +10,7 @@ import { getAllProfesionales } from "../api/profesionalApi";
 import TerapiasTable from "../components/TerapiasTable";
 import TerapiaFormDialog from "../components/TerapiaFormDialog";
 import { useAuth } from "../components/authcontext";
-import { can } from "../can";
+import { can } from "../utils/can";
 
 const Terapias = () => {
   const { role } = useAuth();

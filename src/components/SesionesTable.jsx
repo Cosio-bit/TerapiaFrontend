@@ -3,7 +3,7 @@ import { Box, Button, Typography, TextField, MenuItem, Autocomplete } from "@mui
 import { DataGrid } from "@mui/x-data-grid";
 import dayjs from "dayjs";
 import { useAuth } from "../components/authcontext";
-import { can } from "../can"; // ✅ Permisos
+import { can } from "../utils/can";
 
 const estadoOpciones = [
   "Pagado y Realizado",

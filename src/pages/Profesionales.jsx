@@ -10,7 +10,7 @@ import { getAllUsuarios } from "../api/usuarioApi";
 import ProfesionalesTable from "../components/ProfesionalesTable";
 import ProfesionalFormDialog from "../components/ProfesionalFormDialog";
 import { useAuth } from "../components/authcontext";
-import { can } from "../can";
+import { can } from "../utils/can";
 
 const Profesionales = () => {
   const { role } = useAuth();

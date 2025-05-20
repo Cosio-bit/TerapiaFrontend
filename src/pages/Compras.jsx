@@ -12,7 +12,7 @@ import { getAllProductos } from "../api/productoApi";
 import ComprasTable from "../components/ComprasTable";
 import CompraFormDialog from "../components/CompraFormDialog";
 import { useAuth } from "../components/authcontext";
-import { can } from "../can";
+import { can } from "../utils/can";
 
 const Compras = () => {
   const { role } = useAuth();

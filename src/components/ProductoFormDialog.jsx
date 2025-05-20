@@ -1,17 +1,14 @@
 import React, { useState, useEffect } from "react";
-import {
-  Dialog, DialogActions, DialogContent, DialogTitle,
-  TextField, Button, FormControl, InputLabel, Select, MenuItem
-} from "@mui/material";
+import { Dialog, DialogActions, DialogContent, DialogTitle, TextField, Button, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import { useAuth } from "../components/authcontext";
-import { can, canEditField } from "../can";
+import { canEditField } from "../utils/can";
 
-const ProductoFormDialog = ({
-  open,
-  onClose,
-  onSave,
-  producto,
-  proveedores,
+const ProductoFormDialog = ({ 
+  open, 
+  onClose, 
+  onSave, 
+  producto, 
+  proveedores, 
   editing,
   setSnackbar
 }) => {
@@ -28,6 +25,7 @@ const ProductoFormDialog = ({
   useEffect(() => {
     if (producto?.id_producto) {
       const proveedorId = proveedores.find(p => p.usuario.nombre === producto.proveedor)?.id_proveedor || "";
+
       setFormProducto({
         proveedor: proveedorId,
         nombre: producto.nombre || "",
@@ -55,14 +53,8 @@ const ProductoFormDialog = ({
   const canEditDescripcion = canEditField(role, "producto", "descripcion");
   const canEditPrecio = canEditField(role, "producto", "precio");
   const canEditStock = canEditField(role, "producto", "stock");
-  const canSave = editing ? can(role, "edit", "producto") : can(role, "create", "producto");
 
   const handleSave = async () => {
-    if (!canSave) {
-      setSnackbar({ open: true, message: "No tienes permiso para realizar esta acción.", severity: "error" });
-      return;
-    }
-
     if (!formProducto.proveedor || !formProducto.nombre || formProducto.precio === "" || formProducto.stock === "") {
       setSnackbar({ open: true, message: "Complete todos los campos obligatorios.", severity: "error" });
       return;
@@ -129,7 +121,10 @@ const ProductoFormDialog = ({
           type="number"
           fullWidth
           value={formProducto.precio}
-          onChange={(e) => canEditPrecio && setFormProducto({ ...formProducto, precio: e.target.value === "" ? "" : Number(e.target.value) })}
+          onChange={(e) => canEditPrecio && setFormProducto({ 
+            ...formProducto, 
+            precio: e.target.value === "" ? "" : Number(e.target.value) 
+          })}
           disabled={!canEditPrecio}
         />
 
@@ -139,13 +134,21 @@ const ProductoFormDialog = ({
           type="number"
           fullWidth
           value={formProducto.stock}
-          onChange={(e) => canEditStock && setFormProducto({ ...formProducto, stock: e.target.value === "" ? "" : Number(e.target.value) })}
+          onChange={(e) => canEditStock && setFormProducto({ 
+            ...formProducto, 
+            stock: e.target.value === "" ? "" : Number(e.target.value)
+          })}
           disabled={!canEditStock}
         />
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancelar</Button>
-        <Button onClick={handleSave} variant="contained" color="primary" disabled={!canSave}>
+        <Button 
+          onClick={handleSave} 
+          variant="contained" 
+          color="primary"
+          disabled={!(canEditProveedor || canEditNombre || canEditDescripcion || canEditPrecio || canEditStock)}
+        >
           {editing ? "Guardar Cambios" : "Crear Producto"}
         </Button>
       </DialogActions>

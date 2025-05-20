@@ -6,7 +6,7 @@ import { fetchComprasBetweenDates } from "../api/compraEstadisticaApi";
 import { getAllClientes } from "../api/clienteApi";
 import { formatnumber } from '../utils/formatnumber';
 import { useAuth } from "../components/authcontext";
-import { can } from "../can";
+import { can } from "../utils/can";
 
 const ComprasTable = ({ compras, onEdit, onDelete }) => {
   const { role } = useAuth();

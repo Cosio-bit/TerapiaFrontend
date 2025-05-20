@@ -10,7 +10,7 @@ import CategoriasTable from "../components/CategoriasTable";
 import CategoriaFormDialog from "../components/CategoriaFormDialog";
 
 import { useAuth } from "../components/authcontext";
-import { can } from "../can";
+import { can } from "../utils/can";
 
 const Categorias = () => {
   const { role } = useAuth();

@@ -12,7 +12,7 @@ import { fetchVariantes } from "../api/varianteApi";
 import SesionGroupsTable from "../components/SesionGroupsTable";
 import SesionGroupFormDialog from "../components/SesionGroupFormDialog";
 import { useAuth } from "../components/authcontext"; // ✅
-import { can } from "../can"; // ✅
+import { can } from "../utils/can";
 
 const formatnumber = (number) => {
   return new Intl.NumberFormat("es-CL").format(number);

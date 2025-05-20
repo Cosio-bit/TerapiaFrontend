@@ -17,7 +17,7 @@ import {
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useAuth } from "../components/authcontext";
-import { canEditField } from "../can";
+import { canEditField } from "../utils/can";
 
 const TerapiaFormDialog = ({
   open,
@@ -57,6 +57,11 @@ const TerapiaFormDialog = ({
     setErrors({});
   }, [terapia]);
 
+  const canEditNombre = canEditField(role, "terapia", "nombre");
+  const canEditDescripcion = canEditField(role, "terapia", "descripcion");
+  const canEditProfesionales = canEditField(role, "terapia", "profesionales");
+  const canEditVariantes = canEditField(role, "terapia", "variantes");
+
   const validateForm = () => {
     const newErrors = {};
     if (!formTerapia.nombre) newErrors.nombre = "El nombre es obligatorio.";
@@ -75,6 +80,7 @@ const TerapiaFormDialog = ({
   };
 
   const handleAddVariante = () => {
+    if (!canEditVariantes) return;
     setFormTerapia({
       ...formTerapia,
       variantes: [
@@ -85,16 +91,16 @@ const TerapiaFormDialog = ({
   };
 
   const handleVarianteChange = (index, field, value) => {
+    if (!canEditVariantes) return;
     const newVariantes = [...formTerapia.variantes];
-
-    newVariantes[index][field] = ["precio", "duracion", "cantidad"].includes(field)
+    newVariantes[index][field] = field === "precio" || field === "duracion" || field === "cantidad"
       ? value === "" ? 0 : Number(value)
       : value;
-
     setFormTerapia({ ...formTerapia, variantes: newVariantes });
   };
 
   const handleDeleteVariante = (index) => {
+    if (!canEditVariantes) return;
     const newVariantes = [...formTerapia.variantes];
     newVariantes.splice(index, 1);
     setFormTerapia({ ...formTerapia, variantes: newVariantes });
@@ -104,105 +110,111 @@ const TerapiaFormDialog = ({
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>{editing ? "Editar Terapia" : "Crear Terapia"}</DialogTitle>
       <DialogContent>
-        {canEditField(role, "terapia", "nombre") && (
-          <TextField
-            margin="dense"
-            label="Nombre"
-            fullWidth
-            value={formTerapia.nombre}
-            onChange={(e) => setFormTerapia({ ...formTerapia, nombre: e.target.value })}
-            error={!!errors.nombre}
-            helperText={errors.nombre}
-          />
-        )}
-        {canEditField(role, "terapia", "descripcion") && (
-          <TextField
-            margin="dense"
-            label="Descripción"
-            fullWidth
-            multiline
-            value={formTerapia.descripcion}
-            onChange={(e) => setFormTerapia({ ...formTerapia, descripcion: e.target.value })}
-            error={!!errors.descripcion}
-            helperText={errors.descripcion}
-          />
-        )}
-        {canEditField(role, "terapia", "profesionales") && (
-          <FormControl fullWidth margin="dense">
-            <InputLabel>Profesionales</InputLabel>
-            <Select
-              multiple
-              value={formTerapia.profesionalesSeleccionados}
-              onChange={(e) =>
-                setFormTerapia({
-                  ...formTerapia,
-                  profesionalesSeleccionados: e.target.value,
-                })
-              }
-              renderValue={(selected) =>
-                selected
-                  .map(
-                    (id) =>
-                      profesionales.find((p) => p.id_profesional === id)?.usuario?.nombre || "Desconocido"
-                  )
-                  .join(", ")
-              }
-            >
-              {profesionales.map((profesional) => (
-                <MenuItem key={profesional.id_profesional} value={profesional.id_profesional}>
-                  <Checkbox
-                    checked={formTerapia.profesionalesSeleccionados.includes(profesional.id_profesional)}
-                  />
-                  <ListItemText primary={profesional.usuario?.nombre || "Sin nombre"} />
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        )}
+        <TextField
+          margin="dense"
+          label="Nombre"
+          fullWidth
+          value={formTerapia.nombre}
+          onChange={(e) => canEditNombre && setFormTerapia({ ...formTerapia, nombre: e.target.value })}
+          error={!!errors.nombre}
+          helperText={errors.nombre}
+          disabled={!canEditNombre}
+        />
+        <TextField
+          margin="dense"
+          label="Descripción"
+          fullWidth
+          multiline
+          value={formTerapia.descripcion}
+          onChange={(e) => canEditDescripcion && setFormTerapia({ ...formTerapia, descripcion: e.target.value })}
+          error={!!errors.descripcion}
+          helperText={errors.descripcion}
+          disabled={!canEditDescripcion}
+        />
 
-        {/* Variantes */}
-        {canEditField(role, "terapia", "variantes") && (
-          <div>
-            <h4>Variantes</h4>
-            {formTerapia.variantes.map((variante, index) => (
-              <div key={index} style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
-                <TextField
-                  label="Nombre"
-                  value={variante.nombre}
-                  onChange={(e) => handleVarianteChange(index, "nombre", e.target.value)}
+        <FormControl fullWidth margin="dense" disabled={!canEditProfesionales}>
+          <InputLabel>Profesionales</InputLabel>
+          <Select
+            multiple
+            value={formTerapia.profesionalesSeleccionados}
+            onChange={(e) => canEditProfesionales && setFormTerapia({
+              ...formTerapia,
+              profesionalesSeleccionados: e.target.value,
+            })}
+            renderValue={(selected) =>
+              selected
+                .map(
+                  (id) => profesionales.find((p) => p.id_profesional === id)?.usuario?.nombre || "Desconocido"
+                )
+                .join(", ")
+            }
+          >
+            {profesionales.map((profesional) => (
+              <MenuItem key={profesional.id_profesional} value={profesional.id_profesional}>
+                <Checkbox
+                  checked={formTerapia.profesionalesSeleccionados.includes(profesional.id_profesional)}
                 />
-                <TextField
-                  label="Precio"
-                  type="number"
-                  value={variante.precio}
-                  onChange={(e) => handleVarianteChange(index, "precio", e.target.value)}
-                />
-                <TextField
-                  label="Duración (min)"
-                  type="number"
-                  value={variante.duracion}
-                  onChange={(e) => handleVarianteChange(index, "duracion", e.target.value)}
-                />
-                <TextField
-                  label="Cantidad"
-                  type="number"
-                  value={variante.cantidad}
-                  onChange={(e) => handleVarianteChange(index, "cantidad", e.target.value)}
-                />
-                <IconButton onClick={() => handleDeleteVariante(index)} color="error">
-                  <DeleteIcon />
-                </IconButton>
-              </div>
+                <ListItemText primary={profesional.usuario?.nombre || "Sin nombre"} />
+              </MenuItem>
             ))}
-            <Button startIcon={<AddCircleOutlineIcon />} onClick={handleAddVariante} variant="outlined">
-              Agregar Variante
-            </Button>
-          </div>
-        )}
+          </Select>
+        </FormControl>
+
+        {/* Variantes Management */}
+        <div>
+          <h4>Variantes</h4>
+          {formTerapia.variantes.map((variante, index) => (
+            <div key={index} style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
+              <TextField
+                label="Nombre"
+                value={variante.nombre}
+                onChange={(e) => handleVarianteChange(index, "nombre", e.target.value)}
+                disabled={!canEditVariantes}
+              />
+              <TextField
+                label="Precio"
+                type="number"
+                value={variante.precio}
+                onChange={(e) => handleVarianteChange(index, "precio", e.target.value)}
+                disabled={!canEditVariantes}
+              />
+              <TextField
+                label="Duración (min)"
+                type="number"
+                value={variante.duracion}
+                onChange={(e) => handleVarianteChange(index, "duracion", e.target.value)}
+                disabled={!canEditVariantes}
+              />
+              <TextField
+                label="Cantidad"
+                type="number"
+                value={variante.cantidad}
+                onChange={(e) => handleVarianteChange(index, "cantidad", e.target.value)}
+                disabled={!canEditVariantes}
+              />
+              <IconButton onClick={() => handleDeleteVariante(index)} color="error" disabled={!canEditVariantes}>
+                <DeleteIcon />
+              </IconButton>
+            </div>
+          ))}
+          <Button
+            startIcon={<AddCircleOutlineIcon />}
+            onClick={handleAddVariante}
+            variant="outlined"
+            disabled={!canEditVariantes}
+          >
+            Agregar Variante
+          </Button>
+        </div>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancelar</Button>
-        <Button onClick={handleSave} variant="contained" color="primary">
+        <Button
+          onClick={handleSave}
+          variant="contained"
+          color="primary"
+          disabled={!(canEditNombre || canEditDescripcion || canEditProfesionales || canEditVariantes)}
+        >
           {editing ? "Guardar Cambios" : "Crear Terapia"}
         </Button>
       </DialogActions>

@@ -13,7 +13,7 @@ import { fetchSesionesByEstadoAndFecha } from "../api/sesionGroupEstadisticasApi
 import { getAllTerapias } from "../api/terapiaApi";
 import { formatnumber } from "../utils/formatnumber";
 import { useAuth } from "../components/authcontext"; // ✅ Importa contexto de autenticación
-import { can } from "../can"; // ✅ Función para validar permisos
+import { can } from "../utils/can"; // ✅ Importa función can
 
 const estadoOpciones = [
   "Pagado y Realizado",

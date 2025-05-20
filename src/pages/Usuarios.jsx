@@ -9,7 +9,7 @@ import {
 import UsuariosTable from "../components/UsuariosTable";
 import UsuarioFormDialog from "../components/UsuarioFormDialog";
 import { useAuth } from "../components/authcontext";
-import { can } from "../can";
+import { can } from "../utils/can";
 
 const Usuarios = () => {
   const { role } = useAuth();

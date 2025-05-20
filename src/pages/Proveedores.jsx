@@ -10,7 +10,7 @@ import { getAllUsuarios } from "../api/usuarioApi";
 import ProveedoresTable from "../components/ProveedoresTable";
 import ProveedorFormDialog from "../components/ProveedorFormDialog";
 import { useAuth } from "../components/authcontext";
-import { can } from "../can";
+import { can } from "../utils/can";
 
 const Proveedores = () => {
   const { role } = useAuth(); // ✅ Obtener el rol actual

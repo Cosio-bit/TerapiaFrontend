@@ -7,7 +7,7 @@ import { getAllClientes } from "../api/clienteApi";
 import { getAllProveedores } from "../api/proveedorApi";
 import { formatnumber } from '../utils/formatnumber';
 import { useAuth } from "../components/authcontext";
-import { can } from "../can";
+import { can } from "../utils/can";
 
 const estadoOpciones = [
   "Pagado y Realizado",

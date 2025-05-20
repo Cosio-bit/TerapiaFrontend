@@ -10,7 +10,8 @@ import { getAllClientes } from "../api/clienteApi";
 import FichasSaludTable from "../components/FichasSaludTable";
 import FichaSaludFormDialog from "../components/FichaSaludFormDialog";
 import { useAuth } from "../components/authcontext";
-import { can } from "../can";
+import { can } from "../utils/can";
+
 
 const FichasSalud = () => {
   const { role } = useAuth();

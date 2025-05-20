@@ -21,7 +21,7 @@ export const permissions = {
     compra: {
       actions: ["view", "create", "edit", "delete"],
       fields: {
-        edit: ["cliente", "fecha", "productosComprados"],
+        edit: ["cliente", "proveedor", "fecha", "productosComprados"],
       },
     },
     fichasalud: {
@@ -57,7 +57,7 @@ export const permissions = {
     terapia: {
       actions: ["view", "create", "edit", "delete"],
       fields: {
-        edit: ["nombre", "descripcion", "presencial", "variantes"],
+        edit: ["nombre", "descripcion", "presencial", "profesionales", "variantes"],
       },
     },
     variante: {
@@ -69,34 +69,37 @@ export const permissions = {
     sala: {
       actions: ["view", "create", "edit", "delete"],
       fields: {
-        edit: ["nombre", "capacidad", "ubicacion", "descripcion"],
+        edit: ["proveedor", "nombre", "capacidad", "precio", "ubicacion", "estado"],
       },
     },
     sesion: {
       actions: ["view", "create", "edit", "delete"],
       fields: {
-        edit: ["fecha", "hora_inicio", "hora_fin", "terapia", "cliente", "profesional", "estado"],
+        edit: ["fecha_hora", "precio", "estado", "profesional"],
       },
     },
     sesiongroup: {
       actions: ["view", "create", "edit", "delete"],
       fields: {
-        edit: ["nombre", "descripcion", "sesiones", "clientes"],
+        edit: ["terapia", "cliente", "variante", "descripcion", "sesiones"],
       },
     },
     proveedor: {
       actions: ["view", "create", "edit", "delete"],
       fields: {
-        edit: ["nombre", "rut", "email", "telefono", "direccion"],
+        edit: ["id_usuario", "rut_empresa", "direccion", "telefono", "email"],
       },
     },
     profesional: {
       actions: ["view", "create", "edit", "delete"],
       fields: {
-        edit: ["nombre", "rut", "email", "telefono", "direccion", "especialidad"],
+        edit: ["id_usuario", "especialidad", "certificaciones", "disponibilidad", "banco", "nro_cuenta_bancaria"],
       },
     },
   },
+
+
+
   editor: {
     cliente: {
       actions: ["view", "create", "edit"],

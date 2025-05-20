@@ -2,7 +2,7 @@ import React from "react";
 import { Box, Button } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { useAuth } from "../components/authcontext";
-import { can } from "../can";
+import { can } from "../utils/can";
 
 const VariantesTable = ({ variantes = [], onEdit, onDelete }) => {
   const { role } = useAuth();

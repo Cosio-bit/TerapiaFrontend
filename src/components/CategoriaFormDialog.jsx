@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 
 import { useAuth } from "../components/authcontext";
-import { can, canEditField } from "../can"; // Asegúrate de importar desde tu helper de permisos
+import { can, canEditField } from "../utils/can";
 
 const CategoriaFormDialog = ({ open, onClose, onSave, categoria, editing, setSnackbar }) => {
   const { role } = useAuth();

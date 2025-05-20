@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 
 import { useAuth } from "../components/authcontext";
-import { canEditField, can } from "../can";
+import { canEditField, can } from "../utils/can";
 
 const ArriendoFormDialog = ({
   open,

@@ -8,7 +8,7 @@ import {
 import VariantesTable from "../components/VariantesTable";
 import VarianteFormDialog from "../components/VarianteFormDialog";
 import { useAuth } from "../components/authcontext";
-import { can } from "../can";
+import { can } from "../utils/can";
 
 const Variantes = ({ idTerapia }) => {
   const { role } = useAuth();

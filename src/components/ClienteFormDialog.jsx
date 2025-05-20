@@ -18,7 +18,7 @@ import UsuarioFormDialog from "./UsuarioFormDialog";
 import { createUsuario } from "../api/usuarioApi";
 import { useAuth } from "../components/authcontext";
 import { canEditField } from "../utils/can";
-import { can } from "../utils/can";
+
 
 const ClienteFormDialog = ({
   open,

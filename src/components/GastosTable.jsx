@@ -6,7 +6,7 @@ import { fetchGastosFiltrado } from "../api/gastoEstadisticasApi";
 import { getAllProveedores } from "../api/proveedorApi";
 import { formatnumber } from '../utils/formatnumber';
 import { useAuth } from "../components/authcontext";
-import { can } from "../can";
+import { can } from "../utils/can";
 
 const descripcionOpciones = ["Gastos Fijos", "Insumos", "Productos", "Sueldos"];
 

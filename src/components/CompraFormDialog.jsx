@@ -17,7 +17,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import dayjs from "dayjs";
 import { createCompra, updateCompra } from "../api/compraApi";
 import { useAuth } from "../components/authcontext";
-import { can, canEditField } from "../can";
+import { can, canEditField } from "../utils/can";
 
 const CompraFormDialog = ({
   open,

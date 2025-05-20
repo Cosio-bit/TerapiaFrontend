@@ -10,7 +10,7 @@ import { getAllProveedores } from "../api/proveedorApi";
 import ProductosTable from "../components/ProductosTable";
 import ProductoFormDialog from "../components/ProductoFormDialog";
 import { useAuth } from "../components/authcontext";
-import { can } from "../can";
+import { can } from "../utils/can";
 
 const Productos = () => {
   const { role } = useAuth();
