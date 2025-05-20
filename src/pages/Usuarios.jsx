@@ -8,9 +8,12 @@ import {
 } from "../api/usuarioApi";
 import UsuariosTable from "../components/UsuariosTable";
 import UsuarioFormDialog from "../components/UsuarioFormDialog";
+import { useAuth } from "../components/authcontext";
+import { can } from "../can";
 
 const Usuarios = () => {
-  const [usuarios, setUsuarios] = useState([]);  // Ensure it's an empty array by default
+  const { role } = useAuth();
+  const [usuarios, setUsuarios] = useState([]);
   const [currentUsuario, setCurrentUsuario] = useState(null);
   const [editing, setEditing] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
@@ -23,7 +26,7 @@ const Usuarios = () => {
         if (Array.isArray(data)) {
           setUsuarios(data);
         } else {
-          setUsuarios([]); // In case the fetched data is not an array
+          setUsuarios([]);
         }
       } catch {
         setSnackbar({ open: true, message: "Error al cargar los usuarios.", severity: "error" });
@@ -77,17 +80,20 @@ const Usuarios = () => {
       <Typography variant="h4" gutterBottom>
         Gestión de Usuarios
       </Typography>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => {
-          setEditing(false);
-          setCurrentUsuario(null);
-          setOpenDialog(true);
-        }}
-      >
-        Crear Usuario
-      </Button>
+
+      {can(role, "create", "usuario") && (
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            setEditing(false);
+            setCurrentUsuario(null);
+            setOpenDialog(true);
+          }}
+        >
+          Crear Usuario
+        </Button>
+      )}
 
       <UsuariosTable usuarios={usuarios} onEdit={handleEditUsuario} onDelete={handleDeleteUsuario} />
 

@@ -17,6 +17,8 @@ import {
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { getAllProfesionales } from "../api/profesionalApi";
+import { useAuth } from "../components/authcontext";
+import { canEditField } from "../can";
 
 const SesionGroupFormDialog = ({
   open,
@@ -29,6 +31,8 @@ const SesionGroupFormDialog = ({
   editing,
   setSnackbar,
 }) => {
+  const { role } = useAuth();
+
   const [formSesionGroup, setFormSesionGroup] = useState({
     terapia: "",
     cliente: "",
@@ -127,60 +131,66 @@ const SesionGroupFormDialog = ({
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>{editing ? "Editar Grupo de Sesiones" : "Crear Grupo de Sesiones"}</DialogTitle>
       <DialogContent>
+        {canEditField(role, "sesiongroup", "terapia") && (
+          <FormControl fullWidth margin="dense">
+            <InputLabel>Terapia</InputLabel>
+            <Select
+              value={formSesionGroup.terapia || ""}
+              onChange={(e) => setFormSesionGroup({ ...formSesionGroup, terapia: e.target.value })}
+            >
+              {terapias.map((terapia) => (
+                <MenuItem key={terapia.id_terapia} value={terapia.id_terapia}>
+                  {terapia.nombre}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        )}
 
-        <FormControl fullWidth margin="dense">
-          <InputLabel>Terapia</InputLabel>
-          <Select
-            value={formSesionGroup.terapia || ""}
-            onChange={(e) => setFormSesionGroup({ ...formSesionGroup, terapia: e.target.value })}
-          >
-            {terapias.map((terapia) => (
-              <MenuItem key={terapia.id_terapia} value={terapia.id_terapia}>
-                {terapia.nombre}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        {canEditField(role, "sesiongroup", "variante") && (
+          <FormControl fullWidth margin="dense">
+            <InputLabel>Variante</InputLabel>
+            <Select
+              value={formSesionGroup.variante}
+              onChange={(e) => setFormSesionGroup({ ...formSesionGroup, variante: e.target.value })}
+              disabled={!formSesionGroup.terapia}
+            >
+              {terapias.find(t => t.id_terapia === formSesionGroup.terapia)?.variantes?.map((v) => (
+                <MenuItem key={v.id_variante} value={v.id_variante}>
+                  {v.nombre}
+                </MenuItem>
+              )) || []}
+            </Select>
+          </FormControl>
+        )}
 
-        <FormControl fullWidth margin="dense">
-          <InputLabel>Variante</InputLabel>
-          <Select
-            value={formSesionGroup.variante}
-            onChange={(e) => setFormSesionGroup({ ...formSesionGroup, variante: e.target.value })}
-            disabled={!formSesionGroup.terapia}
-          >
-            {terapias.find(t => t.id_terapia === formSesionGroup.terapia)?.variantes?.map((v) => (
-              <MenuItem key={v.id_variante} value={v.id_variante}>
-                {v.nombre}
-              </MenuItem>
-            )) || []}
-          </Select>
-        </FormControl>
+        {canEditField(role, "sesiongroup", "cliente") && (
+          <FormControl fullWidth margin="dense">
+            <InputLabel>Cliente</InputLabel>
+            <Select
+              value={formSesionGroup.cliente}
+              onChange={(e) => setFormSesionGroup({ ...formSesionGroup, cliente: e.target.value })}
+            >
+              {clientes.map((cliente) => (
+                <MenuItem key={cliente.id_cliente} value={cliente.id_cliente}>
+                  {cliente.usuario.nombre}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        )}
 
-        <FormControl fullWidth margin="dense">
-          <InputLabel>Cliente</InputLabel>
-          <Select
-            value={formSesionGroup.cliente}
-            onChange={(e) => setFormSesionGroup({ ...formSesionGroup, cliente: e.target.value })}
-          >
-            {clientes.map((cliente) => (
-              <MenuItem key={cliente.id_cliente} value={cliente.id_cliente}>
-                {cliente.usuario.nombre}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        {canEditField(role, "sesiongroup", "descripcion") && (
+          <TextField
+            margin="dense"
+            label="Descripción"
+            fullWidth
+            multiline
+            value={formSesionGroup.descripcion}
+            onChange={(e) => setFormSesionGroup({ ...formSesionGroup, descripcion: e.target.value })}
+          />
+        )}
 
-        <TextField
-          margin="dense"
-          label="Descripción"
-          fullWidth
-          multiline
-          value={formSesionGroup.descripcion}
-          onChange={(e) => setFormSesionGroup({ ...formSesionGroup, descripcion: e.target.value })}
-        />
-
-        {/* Sesiones Management */}
         <div>
           <Typography variant="h6" gutterBottom>
             Sesiones
@@ -202,54 +212,62 @@ const SesionGroupFormDialog = ({
             >
               <Typography variant="subtitle2">Sesión #{index + 1}</Typography>
 
-              <TextField
-                fullWidth
-                label="Fecha y Hora"
-                type="datetime-local"
-                value={sesion.fecha_hora}
-                onChange={(e) => handleSesionChange(index, "fecha_hora", e.target.value)}
-              />
+              {canEditField(role, "sesiongroup", "fecha_hora") && (
+                <TextField
+                  fullWidth
+                  label="Fecha y Hora"
+                  type="datetime-local"
+                  value={sesion.fecha_hora}
+                  onChange={(e) => handleSesionChange(index, "fecha_hora", e.target.value)}
+                />
+              )}
 
-              <TextField
-                fullWidth
-                label="Precio"
-                type="number"
-                value={sesion.precio}
-                onChange={(e) => handleSesionChange(index, "precio", e.target.value)}
-              />
+              {canEditField(role, "sesiongroup", "precio") && (
+                <TextField
+                  fullWidth
+                  label="Precio"
+                  type="number"
+                  value={sesion.precio}
+                  onChange={(e) => handleSesionChange(index, "precio", e.target.value)}
+                />
+              )}
 
-              <FormControl fullWidth>
-                <InputLabel>Estado</InputLabel>
-                <Select
-                  value={sesion.estado || ""}
-                  onChange={(e) => handleSesionChange(index, "estado", e.target.value)}
-                  label="Estado"
-                >
-                  {estadoOpciones.map((opcion) => (
-                    <MenuItem key={opcion} value={opcion}>
-                      {opcion}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              <FormControl fullWidth>
-                <InputLabel>Profesional</InputLabel>
-                <Select
-                  value={sesion.profesional || ""}
-                  onChange={(e) => handleSesionChange(index, "profesional", e.target.value)}
-                  disabled={!formSesionGroup.terapia}
-                  label="Profesional"
-                >
-                  {terapias
-                    .find((t) => t.id_terapia === formSesionGroup.terapia)
-                    ?.profesionales?.map((profesional) => (
-                      <MenuItem key={profesional.id_profesional} value={profesional.id_profesional}>
-                        {profesional.usuario.nombre}
+              {canEditField(role, "sesiongroup", "estado") && (
+                <FormControl fullWidth>
+                  <InputLabel>Estado</InputLabel>
+                  <Select
+                    value={sesion.estado || ""}
+                    onChange={(e) => handleSesionChange(index, "estado", e.target.value)}
+                    label="Estado"
+                  >
+                    {estadoOpciones.map((opcion) => (
+                      <MenuItem key={opcion} value={opcion}>
+                        {opcion}
                       </MenuItem>
-                    )) || []}
-                </Select>
-              </FormControl>
+                    ))}
+                  </Select>
+                </FormControl>
+              )}
+
+              {canEditField(role, "sesiongroup", "profesional") && (
+                <FormControl fullWidth>
+                  <InputLabel>Profesional</InputLabel>
+                  <Select
+                    value={sesion.profesional || ""}
+                    onChange={(e) => handleSesionChange(index, "profesional", e.target.value)}
+                    disabled={!formSesionGroup.terapia}
+                    label="Profesional"
+                  >
+                    {terapias
+                      .find((t) => t.id_terapia === formSesionGroup.terapia)
+                      ?.profesionales?.map((profesional) => (
+                        <MenuItem key={profesional.id_profesional} value={profesional.id_profesional}>
+                          {profesional.usuario.nombre}
+                        </MenuItem>
+                      )) || []}
+                  </Select>
+                </FormControl>
+              )}
 
               <Box textAlign="right">
                 <IconButton onClick={() => handleDeleteSesion(index)} color="error">

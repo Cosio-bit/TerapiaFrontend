@@ -11,8 +11,12 @@ import { getAllClientes } from "../api/clienteApi";
 import { getAllProductos } from "../api/productoApi";
 import ComprasTable from "../components/ComprasTable";
 import CompraFormDialog from "../components/CompraFormDialog";
+import { useAuth } from "../components/authcontext";
+import { can } from "../can";
 
 const Compras = () => {
+  const { role } = useAuth();
+
   const [compras, setCompras] = useState([]);
   const [clientes, setClientes] = useState([]);
   const [productos, setProductos] = useState([]);
@@ -55,6 +59,15 @@ const Compras = () => {
   };
 
   const handleSaveCompra = async (compra) => {
+    if (editing && !can(role, "edit", "compra")) {
+      setSnackbar({ open: true, message: "No tienes permiso para editar compras.", severity: "error" });
+      return;
+    }
+    if (!editing && !can(role, "create", "compra")) {
+      setSnackbar({ open: true, message: "No tienes permiso para crear compras.", severity: "error" });
+      return;
+    }
+
     try {
       if (editing) {
         if (!currentCompra?.id_compra) {
@@ -75,6 +88,11 @@ const Compras = () => {
   };
 
   const handleEditCompra = (compra) => {
+    if (!can(role, "edit", "compra")) {
+      setSnackbar({ open: true, message: "No tienes permiso para editar compras.", severity: "error" });
+      return;
+    }
+
     const clienteEstructurado = typeof compra.cliente === "string"
       ? clientes.find((c) => c.usuario.nombre === compra.cliente) || { id_cliente: "" }
       : compra.cliente;
@@ -84,7 +102,7 @@ const Compras = () => {
 
     const updatedCompra = {
       id_compra: compra.id_compra ?? compra.id ?? null,
-      cliente: clienteEstructurado && clienteEstructurado.id_cliente ? { id_cliente: clienteEstructurado.id_cliente } : { id_cliente: "" },
+      cliente: clienteEstructurado?.id_cliente ? { id_cliente: clienteEstructurado.id_cliente } : { id_cliente: "" },
       fecha: fechaValida,
       productosComprados: Array.isArray(compra.productosComprados) ? compra.productosComprados.map(prod => ({
         id_producto_comprado: prod.id_producto_comprado || null,
@@ -99,6 +117,11 @@ const Compras = () => {
   };
 
   const handleDeleteCompra = async (id) => {
+    if (!can(role, "delete", "compra")) {
+      setSnackbar({ open: true, message: "No tienes permiso para eliminar compras.", severity: "error" });
+      return;
+    }
+
     try {
       await deleteCompra(id);
       fetchComprasData();
@@ -113,19 +136,26 @@ const Compras = () => {
       <Typography variant="h4" gutterBottom>
         Gestión de Compras
       </Typography>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => {
-          setEditing(false);
-          setCurrentCompra(null);
-          setOpenDialog(true);
-        }}
-      >
-        Crear Compra
-      </Button>
 
-      <ComprasTable compras={compras} onEdit={handleEditCompra} onDelete={handleDeleteCompra} />
+      {can(role, "create", "compra") && (
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            setEditing(false);
+            setCurrentCompra(null);
+            setOpenDialog(true);
+          }}
+        >
+          Crear Compra
+        </Button>
+      )}
+
+      <ComprasTable
+        compras={compras}
+        onEdit={handleEditCompra}
+        onDelete={handleDeleteCompra}
+      />
 
       <CompraFormDialog
         open={openDialog}
@@ -143,7 +173,10 @@ const Compras = () => {
         autoHideDuration={6000}
         onClose={() => setSnackbar({ open: false, message: "", severity: "success" })}
       >
-        <Alert onClose={() => setSnackbar({ open: false, message: "", severity: "success" })} severity={snackbar.severity}>
+        <Alert
+          onClose={() => setSnackbar({ open: false, message: "", severity: "success" })}
+          severity={snackbar.severity}
+        >
           {snackbar.message}
         </Alert>
       </Snackbar>

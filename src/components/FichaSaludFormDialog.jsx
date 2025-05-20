@@ -12,6 +12,9 @@ import {
   MenuItem,
 } from "@mui/material";
 
+import { useAuth } from "../components/authcontext";
+import { can, canEditField } from "../can";
+
 const FichaSaludFormDialog = ({
   open,
   onClose,
@@ -19,7 +22,10 @@ const FichaSaludFormDialog = ({
   fichaSalud,
   clientes,
   editing,
+  setSnackbar,
 }) => {
+  const { role } = useAuth();
+
   const [formFichaSalud, setFormFichaSalud] = useState({
     fecha: "",
     descripcion: "",
@@ -31,14 +37,15 @@ const FichaSaludFormDialog = ({
     if (fichaSalud) {
       setFormFichaSalud(fichaSalud);
     } else {
-      setFormFichaSalud({
-        fecha: "",
-        descripcion: "",
-        id_cliente: "",
-      });
+      setFormFichaSalud({ fecha: "", descripcion: "", id_cliente: "" });
     }
     setErrors({});
   }, [fichaSalud]);
+
+  const canEditFecha = canEditField(role, "fichasalud", "fecha");
+  const canEditDescripcion = canEditField(role, "fichasalud", "descripcion");
+  const canEditCliente = canEditField(role, "fichasalud", "id_cliente");
+  const canSave = editing ? can(role, "edit", "fichasalud") : can(role, "create", "fichasalud");
 
   const validateForm = () => {
     const newErrors = {};
@@ -50,6 +57,15 @@ const FichaSaludFormDialog = ({
   };
 
   const handleSave = () => {
+    if (!canSave) {
+      setSnackbar?.({
+        open: true,
+        message: "No tienes permiso para realizar esta acción.",
+        severity: "error",
+      });
+      return;
+    }
+
     if (validateForm()) {
       onSave(formFichaSalud);
     }
@@ -66,9 +82,12 @@ const FichaSaludFormDialog = ({
           fullWidth
           InputLabelProps={{ shrink: true }}
           value={formFichaSalud.fecha}
-          onChange={(e) => setFormFichaSalud({ ...formFichaSalud, fecha: e.target.value })}
+          onChange={(e) =>
+            canEditFecha && setFormFichaSalud({ ...formFichaSalud, fecha: e.target.value })
+          }
           error={!!errors.fecha}
           helperText={errors.fecha}
+          disabled={!canEditFecha}
         />
         <TextField
           margin="dense"
@@ -76,15 +95,20 @@ const FichaSaludFormDialog = ({
           fullWidth
           multiline
           value={formFichaSalud.descripcion}
-          onChange={(e) => setFormFichaSalud({ ...formFichaSalud, descripcion: e.target.value })}
+          onChange={(e) =>
+            canEditDescripcion && setFormFichaSalud({ ...formFichaSalud, descripcion: e.target.value })
+          }
           error={!!errors.descripcion}
           helperText={errors.descripcion}
+          disabled={!canEditDescripcion}
         />
-        <FormControl fullWidth margin="dense">
+        <FormControl fullWidth margin="dense" disabled={!canEditCliente}>
           <InputLabel>Cliente</InputLabel>
           <Select
             value={formFichaSalud.id_cliente}
-            onChange={(e) => setFormFichaSalud({ ...formFichaSalud, id_cliente: e.target.value })}
+            onChange={(e) =>
+              canEditCliente && setFormFichaSalud({ ...formFichaSalud, id_cliente: e.target.value })
+            }
             error={!!errors.id_cliente}
           >
             {clientes.map((cliente) => (
@@ -97,7 +121,7 @@ const FichaSaludFormDialog = ({
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancelar</Button>
-        <Button onClick={handleSave} variant="contained" color="primary">
+        <Button onClick={handleSave} variant="contained" color="primary" disabled={!canSave}>
           {editing ? "Guardar Cambios" : "Crear Ficha"}
         </Button>
       </DialogActions>

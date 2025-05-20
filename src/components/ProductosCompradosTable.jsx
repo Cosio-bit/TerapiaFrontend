@@ -1,8 +1,12 @@
 import React from "react";
 import { Box, Button } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
+import { useAuth } from "../components/authcontext";
+import { can } from "../can";
 
 const ProductosCompradosTable = ({ productosComprados = [], onEdit, onDelete }) => {
+  const { role } = useAuth();
+
   const rows = Array.isArray(productosComprados)
     ? productosComprados.map((productoComprado) => ({
         ...productoComprado,
@@ -26,12 +30,16 @@ const ProductosCompradosTable = ({ productosComprados = [], onEdit, onDelete }) 
             flex: 1,
             renderCell: (params) => (
               <Box display="flex" gap={1}>
-                <Button size="small" onClick={() => onEdit(params.row)}>
-                  Editar
-                </Button>
-                <Button size="small" color="error" onClick={() => onDelete(params.row.id)}>
-                  Eliminar
-                </Button>
+                {can(role, "edit", "productocomprado") && (
+                  <Button size="small" onClick={() => onEdit(params.row)}>
+                    Editar
+                  </Button>
+                )}
+                {can(role, "delete", "productocomprado") && (
+                  <Button size="small" color="error" onClick={() => onDelete(params.row.id)}>
+                    Eliminar
+                  </Button>
+                )}
               </Box>
             ),
           },

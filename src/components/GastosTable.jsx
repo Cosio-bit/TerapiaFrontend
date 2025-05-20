@@ -4,11 +4,15 @@ import { DataGrid } from "@mui/x-data-grid";
 import dayjs from "dayjs";
 import { fetchGastosFiltrado } from "../api/gastoEstadisticasApi";
 import { getAllProveedores } from "../api/proveedorApi";
-import { formatnumber } from '../utils/formatnumber'; // ✅ Añadido formato numérico
+import { formatnumber } from '../utils/formatnumber';
+import { useAuth } from "../components/authcontext";
+import { can } from "../can";
 
 const descripcionOpciones = ["Gastos Fijos", "Insumos", "Productos", "Sueldos"];
 
 const GastosTable = ({ onEdit, onDelete }) => {
+  const { role } = useAuth();
+
   const [gastos, setGastos] = useState([]);
   const [totalAmount, setTotalAmount] = useState(0);
   const [nombre, setNombre] = useState("");
@@ -42,7 +46,7 @@ const GastosTable = ({ onEdit, onDelete }) => {
         monto: gasto.monto,
         fecha: dayjs(gasto.fecha).format("DD/MM/YYYY"),
         proveedor: gasto.proveedor?.usuario?.nombre || "No especificado",
-        montoFormateado: formatnumber(gasto.monto || 0), // ✅ Formateado aquí
+        montoFormateado: formatnumber(gasto.monto || 0),
       }));
 
       setRows(processedRows);
@@ -121,7 +125,7 @@ const GastosTable = ({ onEdit, onDelete }) => {
           ))}
         </TextField>
 
-        <Typography variant="h6">Total: ${formatnumber(totalAmount)}</Typography> {/* ✅ Formateado */}
+        <Typography variant="h6">Total: ${formatnumber(totalAmount)}</Typography>
         <Button variant="contained" onClick={loadGastos}>Actualizar</Button>
       </Box>
 
@@ -130,11 +134,11 @@ const GastosTable = ({ onEdit, onDelete }) => {
         columns={[
           { field: "nombre", headerName: "Nombre", flex: 1 },
           { field: "descripcion", headerName: "Tipo de Gasto", flex: 1 },
-          { 
-            field: "monto", 
-            headerName: "Monto", 
+          {
+            field: "monto",
+            headerName: "Monto",
             flex: 1,
-            renderCell: (params) => `$${params.row.montoFormateado}` // ✅ Formateado
+            renderCell: (params) => `$${params.row.montoFormateado}`
           },
           { field: "fecha", headerName: "Fecha", flex: 1 },
           { field: "proveedor", headerName: "Proveedor", flex: 1 },
@@ -145,8 +149,12 @@ const GastosTable = ({ onEdit, onDelete }) => {
             flex: 1,
             renderCell: (params) => (
               <Box display="flex" gap={1}>
-                <Button size="small" onClick={() => onEdit(params.row)}>Editar</Button>
-                <Button size="small" color="error" onClick={() => onDelete(params.row.id)}>Eliminar</Button>
+                {can(role, "edit", "gasto") && (
+                  <Button size="small" onClick={() => onEdit(params.row)}>Editar</Button>
+                )}
+                {can(role, "delete", "gasto") && (
+                  <Button size="small" color="error" onClick={() => onDelete(params.row.id)}>Eliminar</Button>
+                )}
               </Box>
             ),
           },

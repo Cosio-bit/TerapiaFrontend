@@ -11,13 +11,16 @@ import { getAllClientes } from "../api/clienteApi";
 import { fetchVariantes } from "../api/varianteApi";
 import SesionGroupsTable from "../components/SesionGroupsTable";
 import SesionGroupFormDialog from "../components/SesionGroupFormDialog";
+import { useAuth } from "../components/authcontext"; // ✅
+import { can } from "../can"; // ✅
 
-// ✅ Función de formateo numérico integrada directamente
 const formatnumber = (number) => {
-  return new Intl.NumberFormat('es-CL').format(number);
+  return new Intl.NumberFormat("es-CL").format(number);
 };
 
 const SesionGroups = () => {
+  const { role } = useAuth(); // ✅ obtener rol del usuario
+
   const [sesionGroups, setSesionGroups] = useState([]);
   const [terapias, setTerapias] = useState([]);
   const [clientes, setClientes] = useState([]);
@@ -37,17 +40,8 @@ const SesionGroups = () => {
   const fetchSesionGroupsData = async () => {
     try {
       const data = await fetchSesionGroups();
-
-      console.log("📤 API Response for SesionGroups:", JSON.stringify(data, null, 2));
-
-      if (Array.isArray(data)) {
-        setSesionGroups(data);
-      } else {
-        console.error("❌ API returned unexpected data structure:", data);
-        setSesionGroups([]);
-      }
-    } catch (error) {
-      console.error("❌ Error fetching session groups:", error);
+      setSesionGroups(Array.isArray(data) ? data : []);
+    } catch {
       setSnackbar({ open: true, message: "Error al cargar los grupos de sesiones.", severity: "error" });
     }
   };
@@ -56,8 +50,7 @@ const SesionGroups = () => {
     try {
       const data = await getAllTerapias();
       setTerapias(data || []);
-    } catch (error) {
-      console.error("❌ Error fetching terapias:", error);
+    } catch {
       setSnackbar({ open: true, message: "Error al cargar terapias.", severity: "error" });
     }
   };
@@ -65,16 +58,8 @@ const SesionGroups = () => {
   const fetchClientesData = async () => {
     try {
       const data = await getAllClientes();
-      console.log("📤 API Response from /api/clientes:", JSON.stringify(data, null, 2));
-
-      if (Array.isArray(data)) {
-        setClientes(data);
-      } else {
-        console.error("❌ API returned unexpected data structure:", data);
-        setClientes([]);
-      }
-    } catch (error) {
-      console.error("❌ Error fetching clientes:", error);
+      setClientes(Array.isArray(data) ? data : []);
+    } catch {
       setSnackbar({ open: true, message: "Error al cargar clientes.", severity: "error" });
     }
   };
@@ -83,22 +68,14 @@ const SesionGroups = () => {
     try {
       const data = await fetchVariantes();
       setVariantes(data || []);
-    } catch (error) {
-      console.error("❌ Error fetching variantes:", error);
+    } catch {
       setSnackbar({ open: true, message: "Error al cargar variantes.", severity: "error" });
     }
   };
 
   const handleSaveSesionGroup = async (sesionGroup) => {
     try {
-      console.log("📤 Saving SesionGroup:", JSON.stringify(sesionGroup, null, 2));
-
       if (editing) {
-        if (!currentSesionGroup?.id_sesion_group) {
-          console.error("⚠️ No se puede actualizar, falta ID de SesionGroup.");
-          setSnackbar({ open: true, message: "Error: No se puede actualizar, falta ID.", severity: "error" });
-          return;
-        }
         await updateSesionGroup(currentSesionGroup.id_sesion_group, sesionGroup);
       } else {
         await createSesionGroup(sesionGroup);
@@ -111,35 +88,26 @@ const SesionGroups = () => {
         message: editing ? "Grupo de sesiones actualizado con éxito." : "Grupo de sesiones creado con éxito.",
         severity: "success",
       });
-    } catch (error) {
-      console.error("❌ Error saving session group:", error);
+    } catch {
       setSnackbar({ open: true, message: "Error al guardar el grupo de sesiones.", severity: "error" });
     }
   };
 
   const handleEditSesionGroup = (sesionGroup) => {
-    console.log("✏️ Editing SesionGroup:", JSON.stringify(sesionGroup, null, 2));
-
-    if (!sesionGroup.id && !sesionGroup.id_sesion_group) {
-      console.error("⚠️ Error: No se encontró el ID de SesionGroup.");
-      return;
-    }
-
     const updatedSesionGroup = {
       id_sesion_group: sesionGroup.id_sesion_group || sesionGroup.id,
       terapia: sesionGroup.terapia?.id_terapia || sesionGroup.terapia || "",
       cliente: sesionGroup.cliente?.id_cliente || sesionGroup.cliente || "",
       variante: sesionGroup.variante?.id_variante || sesionGroup.variante || "",
-      descripcion: sesionGroup.descripcion ? sesionGroup.descripcion : "",
-      sesiones: sesionGroup.sesiones?.map(sesion => ({
-        ...sesion,
-        profesional: sesion.profesional?.id_profesional || sesion.profesional || ""
+      descripcion: sesionGroup.descripcion || "",
+      sesiones: sesionGroup.sesiones?.map((s) => ({
+        ...s,
+        profesional: s.profesional?.id_profesional || s.profesional || "",
       })) || [],
     };
 
     setCurrentSesionGroup(updatedSesionGroup);
     setEditing(true);
-
     setTimeout(() => setOpenDialog(true), 100);
   };
 
@@ -148,8 +116,7 @@ const SesionGroups = () => {
       await deleteSesionGroup(id);
       fetchSesionGroupsData();
       setSnackbar({ open: true, message: "Grupo de sesiones eliminado con éxito.", severity: "success" });
-    } catch (error) {
-      console.error("❌ Error deleting session group:", error);
+    } catch {
       setSnackbar({ open: true, message: "Error al eliminar el grupo de sesiones.", severity: "error" });
     }
   };
@@ -159,23 +126,26 @@ const SesionGroups = () => {
       <Typography variant="h4" gutterBottom>
         Gestión de Grupos de Sesiones
       </Typography>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => {
-          setEditing(false);
-          setCurrentSesionGroup(null);
-          setOpenDialog(true);
-        }}
-      >
-        Crear Grupo de Sesiones
-      </Button>
+
+      {can(role, "create", "sesiongroup") && (
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            setEditing(false);
+            setCurrentSesionGroup(null);
+            setOpenDialog(true);
+          }}
+        >
+          Crear Grupo de Sesiones
+        </Button>
+      )}
 
       <SesionGroupsTable
-        sesionGroups={sesionGroups.map(sg => ({
+        sesionGroups={sesionGroups.map((sg) => ({
           ...sg,
           cantidad: sg.cantidad ? formatnumber(sg.cantidad) : sg.cantidad,
-          costo: sg.costo ? formatnumber(sg.costo) : sg.costo
+          costo: sg.costo ? formatnumber(sg.costo) : sg.costo,
         }))}
         onEdit={handleEditSesionGroup}
         onDelete={handleDeleteSesionGroup}

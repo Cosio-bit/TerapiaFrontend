@@ -6,13 +6,16 @@ import {
   updateProfesional,
   deleteProfesional,
 } from "../api/profesionalApi";
-import { getAllUsuarios } from "../api/usuarioApi"; // Import usuario fetching
+import { getAllUsuarios } from "../api/usuarioApi";
 import ProfesionalesTable from "../components/ProfesionalesTable";
 import ProfesionalFormDialog from "../components/ProfesionalFormDialog";
+import { useAuth } from "../components/authcontext";
+import { can } from "../can";
 
 const Profesionales = () => {
+  const { role } = useAuth();
   const [profesionales, setProfesionales] = useState([]);
-  const [usuarios, setUsuarios] = useState([]); // State for usuarios
+  const [usuarios, setUsuarios] = useState([]);
   const [currentProfesional, setCurrentProfesional] = useState(null);
   const [editing, setEditing] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
@@ -20,7 +23,7 @@ const Profesionales = () => {
 
   useEffect(() => {
     fetchProfesionales();
-    fetchUsuarios(); // Fetch usuarios
+    fetchUsuarios();
   }, []);
 
   const fetchProfesionales = async () => {
@@ -35,32 +38,32 @@ const Profesionales = () => {
   const fetchUsuarios = async () => {
     try {
       const data = await getAllUsuarios();
-      setUsuarios(Array.isArray(data) ? data : []); // Ensure usuarios is an array
+      setUsuarios(Array.isArray(data) ? data : []);
     } catch (error) {
       setSnackbar({ open: true, message: "Error al cargar los usuarios.", severity: "error" });
     }
   };
 
   const handleSaveProfesional = async (profesional) => {
-    console.log("Final Data to be Saved:", profesional); // Debugging log
-  
     try {
       if (editing) {
-        await updateProfesional(currentProfesional.id_profesional, {
-          ...profesional,
-          id_usuario: profesional.id_usuario, // Ensure the ID is passed
-        });
+        if (!can(role, "edit", "profesional")) {
+          setSnackbar({ open: true, message: "No tienes permiso para editar profesionales.", severity: "error" });
+          return;
+        }
+        await updateProfesional(currentProfesional.id_profesional, profesional);
       } else {
-        await createProfesional({
-          ...profesional,
-          id_usuario: profesional.id_usuario, // Ensure the ID is passed
-        });
+        if (!can(role, "create", "profesional")) {
+          setSnackbar({ open: true, message: "No tienes permiso para crear profesionales.", severity: "error" });
+          return;
+        }
+        await createProfesional(profesional);
       }
-  
+
       await fetchProfesionales();
       setOpenDialog(false);
       setCurrentProfesional(null);
-  
+
       setSnackbar({
         open: true,
         message: editing ? "Profesional actualizado con éxito." : "Profesional creado con éxito.",
@@ -71,15 +74,22 @@ const Profesionales = () => {
       setSnackbar({ open: true, message: "Error al guardar el profesional.", severity: "error" });
     }
   };
-  
 
   const handleEditProfesional = (profesional) => {
+    if (!can(role, "edit", "profesional")) {
+      setSnackbar({ open: true, message: "No tienes permiso para editar profesionales.", severity: "error" });
+      return;
+    }
     setEditing(true);
     setCurrentProfesional(profesional);
     setOpenDialog(true);
   };
 
   const handleDeleteProfesional = async (id) => {
+    if (!can(role, "delete", "profesional")) {
+      setSnackbar({ open: true, message: "No tienes permiso para eliminar profesionales.", severity: "error" });
+      return;
+    }
     try {
       await deleteProfesional(id);
       await fetchProfesionales();
@@ -92,23 +102,28 @@ const Profesionales = () => {
   return (
     <Box p={4}>
       <Typography variant="h4" gutterBottom>Gestión de Profesionales</Typography>
-      <Button variant="contained" color="primary" onClick={() => { setEditing(false); setCurrentProfesional(null); setOpenDialog(true); }}>
-        Crear Profesional
-      </Button>
+
+      {can(role, "create", "profesional") && (
+        <Button variant="contained" color="primary" onClick={() => {
+          setEditing(false);
+          setCurrentProfesional(null);
+          setOpenDialog(true);
+        }}>
+          Crear Profesional
+        </Button>
+      )}
 
       <ProfesionalesTable profesionales={profesionales} onEdit={handleEditProfesional} onDelete={handleDeleteProfesional} />
 
       <ProfesionalFormDialog
-  open={openDialog}
-  onClose={() => setOpenDialog(false)}
-  onSave={handleSaveProfesional} // ✅ CORREGIDO
-  profesional={currentProfesional}
-  usuarios={usuarios}
-  setUsuarios={setUsuarios}      // ✅ NECESARIO PARA AGREGAR EL NUEVO USUARIO
-  editing={editing}
-/>
-
-
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        onSave={handleSaveProfesional}
+        profesional={currentProfesional}
+        usuarios={usuarios}
+        setUsuarios={setUsuarios}
+        editing={editing}
+      />
 
       <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={() => setSnackbar({ open: false, message: "", severity: "success" })}>
         <Alert onClose={() => setSnackbar({ open: false, message: "", severity: "success" })} severity={snackbar.severity}>

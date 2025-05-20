@@ -12,6 +12,8 @@ import dayjs from "dayjs";
 import { fetchSesionesByEstadoAndFecha } from "../api/sesionGroupEstadisticasApi";
 import { getAllTerapias } from "../api/terapiaApi";
 import { formatnumber } from "../utils/formatnumber";
+import { useAuth } from "../components/authcontext"; // ✅ Importa contexto de autenticación
+import { can } from "../can"; // ✅ Función para validar permisos
 
 const estadoOpciones = [
   "Pagado y Realizado",
@@ -21,6 +23,7 @@ const estadoOpciones = [
 ];
 
 const SesionGroupsTable = ({ onEdit, onDelete }) => {
+  const { role } = useAuth(); // ✅ Obtener rol actual
   const [sesionGroups, setSesionGroups] = useState([]);
   const [totalAmount, setTotalAmount] = useState(0);
   const [estado, setEstado] = useState(estadoOpciones[0]);
@@ -77,19 +80,7 @@ const SesionGroupsTable = ({ onEdit, onDelete }) => {
 
   return (
     <Box mt={3}>
-      {/* 🔧 Filtros arriba de la tabla */}
-      <Box
-        display="flex"
-        flexWrap="wrap"
-        gap={2}
-        mb={2}
-        alignItems="flex-start"
-        sx={{
-          overflow: "visible",
-          position: "relative",
-          zIndex: 1,
-        }}
-      >
+      <Box display="flex" flexWrap="wrap" gap={2} mb={2} alignItems="flex-start">
         <TextField
           label="Fecha inicio"
           type="datetime-local"
@@ -112,16 +103,6 @@ const SesionGroupsTable = ({ onEdit, onDelete }) => {
           value={estado}
           onChange={(e) => setEstado(e.target.value)}
           sx={{ minWidth: 220 }}
-          SelectProps={{
-            MenuProps: {
-              PaperProps: {
-                style: {
-                  maxHeight: 300,
-                  overflowY: "auto",
-                },
-              },
-            },
-          }}
         >
           {estadoOpciones.map((opcion) => (
             <MenuItem key={opcion} value={opcion}>
@@ -138,17 +119,6 @@ const SesionGroupsTable = ({ onEdit, onDelete }) => {
           value={terapia}
           onChange={(event, newValue) => setTerapia(newValue)}
           isOptionEqualToValue={(option, value) => option.id_terapia === value.id_terapia}
-          clearOnEscape
-          PopperProps={{
-            modifiers: [
-              {
-                name: "preventOverflow",
-                options: {
-                  boundary: "viewport",
-                },
-              },
-            ],
-          }}
         />
 
         <Box display="flex" alignItems="center" gap={2} sx={{ minWidth: 250 }}>
@@ -161,7 +131,6 @@ const SesionGroupsTable = ({ onEdit, onDelete }) => {
         </Box>
       </Box>
 
-      {/* 🔧 Tabla principal */}
       <DataGrid
         rows={sesionGroups.map((sesionGroup) => ({
           id: sesionGroup?.id_sesion_group,
@@ -195,12 +164,16 @@ const SesionGroupsTable = ({ onEdit, onDelete }) => {
             flex: 1,
             renderCell: (params) => (
               <Box display="flex" gap={1}>
-                <Button size="small" onClick={() => onEdit(params.row)}>
-                  Editar
-                </Button>
-                <Button size="small" color="error" onClick={() => onDelete(params.row.id)}>
-                  Eliminar
-                </Button>
+                {can(role, "edit", "sesiongroup") && (
+                  <Button size="small" onClick={() => onEdit(params.row)}>
+                    Editar
+                  </Button>
+                )}
+                {can(role, "delete", "sesiongroup") && (
+                  <Button size="small" color="error" onClick={() => onDelete(params.row.id)}>
+                    Eliminar
+                  </Button>
+                )}
               </Box>
             ),
           },
@@ -217,13 +190,7 @@ const SesionGroupsTable = ({ onEdit, onDelete }) => {
           </Typography>
           <Box display="flex" flexDirection="column" gap={2}>
             {selectedRowForDetail.sesiones.map((sesion, idx) => (
-              <Box
-                key={idx}
-                p={2}
-                borderRadius={2}
-                boxShadow={1}
-                bgcolor="#f9f9f9"
-              >
+              <Box key={idx} p={2} borderRadius={2} boxShadow={1} bgcolor="#f9f9f9">
                 <Typography variant="subtitle2" gutterBottom>
                   👨‍⚕️ {sesion.profesional?.usuario?.nombre || "Sin asignar"}
                 </Typography>
@@ -237,9 +204,7 @@ const SesionGroupsTable = ({ onEdit, onDelete }) => {
                   🏷️ Estado: {sesion.estado}
                 </Typography>
                 {sesion.notas && (
-                  <Typography variant="body2">
-                    📝 Notas: {sesion.notas}
-                  </Typography>
+                  <Typography variant="body2">📝 Notas: {sesion.notas}</Typography>
                 )}
               </Box>
             ))}

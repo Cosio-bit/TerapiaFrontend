@@ -4,9 +4,13 @@ import { DataGrid } from "@mui/x-data-grid";
 import dayjs from "dayjs";
 import { fetchComprasBetweenDates } from "../api/compraEstadisticaApi";
 import { getAllClientes } from "../api/clienteApi";
-import { formatnumber } from '../utils/formatnumber'; // ✅ Añadido
+import { formatnumber } from '../utils/formatnumber';
+import { useAuth } from "../components/authcontext";
+import { can } from "../can";
 
 const ComprasTable = ({ compras, onEdit, onDelete }) => {
+  const { role } = useAuth();
+
   const [startDate, setStartDate] = useState(dayjs().startOf('month').format("YYYY-MM-DDTHH:mm"));
   const [endDate, setEndDate] = useState(dayjs().endOf('month').format("YYYY-MM-DDTHH:mm"));
   const [filteredCompras, setFilteredCompras] = useState([]);
@@ -87,7 +91,7 @@ const ComprasTable = ({ compras, onEdit, onDelete }) => {
         />
 
         <Typography variant="h6" component="span">
-          Total: ${formatnumber(totalAmount)} {/* ✅ Formateado */}
+          Total: ${formatnumber(totalAmount)}
         </Typography>
         <Button variant="contained" onClick={loadCompras}>Actualizar</Button>
       </Box>
@@ -98,7 +102,7 @@ const ComprasTable = ({ compras, onEdit, onDelete }) => {
           fecha: dayjs(compra.fecha).format("DD/MM/YYYY HH:mm"),
           cliente: compra.cliente?.usuario?.nombre || "No especificado",
           productosComprados: Array.isArray(compra.productosComprados) ? compra.productosComprados : [],
-          montoCompra: formatnumber(compra.productosComprados.reduce( // ✅ montoCompra formateado
+          montoCompra: formatnumber(compra.productosComprados.reduce(
             (prodAcc, prod) => prodAcc + (prod.producto.precio * prod.cantidad), 0
           )),
         }))}
@@ -115,7 +119,7 @@ const ComprasTable = ({ compras, onEdit, onDelete }) => {
                 <Box component="ul" sx={{ paddingLeft: "15px", margin: 0 }}>
                   {productos.map((producto, index) => (
                     <Typography component="li" key={index} variant="body2">
-                      🏷️ {producto.producto?.nombre || "Desconocido"} | 🔢 {producto.cantidad} | 💰 ${formatnumber(producto.producto.precio * producto.cantidad)} {/* ✅ Formateado */}
+                      🏷️ {producto.producto?.nombre || "Desconocido"} | 🔢 {producto.cantidad} | 💰 ${formatnumber(producto.producto.precio * producto.cantidad)}
                     </Typography>
                   ))}
                 </Box>
@@ -127,7 +131,7 @@ const ComprasTable = ({ compras, onEdit, onDelete }) => {
             },
           },
           {
-            field: "montoCompra", // ✅ columna agregada para el total por compra
+            field: "montoCompra",
             headerName: "Monto Total",
             flex: 1,
             renderCell: (params) => `$${params.row.montoCompra}`
@@ -139,12 +143,16 @@ const ComprasTable = ({ compras, onEdit, onDelete }) => {
             flex: 1,
             renderCell: (params) => (
               <Box display="flex" gap={1}>
-                <Button size="small" onClick={() => onEdit(params.row)}>
-                  Editar
-                </Button>
-                <Button size="small" color="error" onClick={() => onDelete(params.row.id)}>
-                  Eliminar
-                </Button>
+                {can(role, "edit", "compra") && (
+                  <Button size="small" onClick={() => onEdit(params.row)}>
+                    Editar
+                  </Button>
+                )}
+                {can(role, "delete", "compra") && (
+                  <Button size="small" color="error" onClick={() => onDelete(params.row.id)}>
+                    Eliminar
+                  </Button>
+                )}
               </Box>
             ),
           },

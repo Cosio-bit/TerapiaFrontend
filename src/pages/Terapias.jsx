@@ -9,8 +9,11 @@ import {
 import { getAllProfesionales } from "../api/profesionalApi";
 import TerapiasTable from "../components/TerapiasTable";
 import TerapiaFormDialog from "../components/TerapiaFormDialog";
+import { useAuth } from "../components/authcontext";
+import { can } from "../can";
 
 const Terapias = () => {
+  const { role } = useAuth();
   const [terapias, setTerapias] = useState([]);
   const [profesionales, setProfesionales] = useState([]);
   const [currentTerapia, setCurrentTerapia] = useState(null);
@@ -81,17 +84,20 @@ const Terapias = () => {
       <Typography variant="h4" gutterBottom>
         Gestión de Terapias
       </Typography>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => {
-          setEditing(false);
-          setCurrentTerapia(null);
-          setOpenDialog(true);
-        }}
-      >
-        Crear Terapia
-      </Button>
+
+      {can(role, "create", "terapia") && (
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            setEditing(false);
+            setCurrentTerapia(null);
+            setOpenDialog(true);
+          }}
+        >
+          Crear Terapia
+        </Button>
+      )}
 
       <TerapiasTable terapias={terapias} onEdit={handleEditTerapia} onDelete={handleDeleteTerapia} />
 

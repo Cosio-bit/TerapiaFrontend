@@ -1,8 +1,11 @@
 import React from "react";
 import { Box, Button } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
+import { useAuth } from "../components/authcontext";
+import { can } from "../can";
 
 const VariantesTable = ({ variantes = [], onEdit, onDelete }) => {
+  const { role } = useAuth();
   const rows = Array.isArray(variantes) ? variantes : [];
 
   return (
@@ -10,7 +13,7 @@ const VariantesTable = ({ variantes = [], onEdit, onDelete }) => {
       <DataGrid
         rows={rows.map((variante, index) => ({
           ...variante,
-          id: variante.id_variante || index, // Assign index if id is missing (for new variants)
+          id: variante.id_variante || index,
         }))}
         columns={[
           { field: "nombre", headerName: "Nombre", flex: 1 },
@@ -24,12 +27,16 @@ const VariantesTable = ({ variantes = [], onEdit, onDelete }) => {
             flex: 1,
             renderCell: (params) => (
               <Box display="flex" gap={1}>
-                <Button size="small" onClick={() => onEdit(params.row)}>
-                  Editar
-                </Button>
-                <Button size="small" color="error" onClick={() => onDelete(params.row.id_variante)}>
-                  Eliminar
-                </Button>
+                {can(role, "edit", "variante") && (
+                  <Button size="small" onClick={() => onEdit(params.row)}>
+                    Editar
+                  </Button>
+                )}
+                {can(role, "delete", "variante") && (
+                  <Button size="small" color="error" onClick={() => onDelete(params.row.id_variante)}>
+                    Eliminar
+                  </Button>
+                )}
               </Box>
             ),
           },

@@ -1,8 +1,11 @@
 import React from "react";
 import { Box, Button } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
+import { useAuth } from "../components/authcontext";
+import { can } from "../can";
 
 const ProfesionalesTable = ({ profesionales, onEdit, onDelete }) => {
+  const { role } = useAuth();
   const profesionalRows = Array.isArray(profesionales) ? profesionales : [];
 
   return (
@@ -17,10 +20,19 @@ const ProfesionalesTable = ({ profesionales, onEdit, onDelete }) => {
           { field: "usuario_nombre", headerName: "Nombre Usuario", flex: 1 },
           { field: "especialidad", headerName: "Especialidad", flex: 1 },
           { field: "banco", headerName: "Banco", flex: 1 },
-          { field: "actions", headerName: "Acciones", flex: 1, renderCell: (params) => (
+          {
+            field: "actions",
+            headerName: "Acciones",
+            flex: 1,
+            sortable: false,
+            renderCell: (params) => (
               <Box display="flex" gap={1}>
-                <Button size="small" onClick={() => onEdit(params.row)}>Editar</Button>
-                <Button size="small" color="error" onClick={() => onDelete(params.row.id)}>Eliminar</Button>
+                {can(role, "edit", "profesional") && (
+                  <Button size="small" onClick={() => onEdit(params.row)}>Editar</Button>
+                )}
+                {can(role, "delete", "profesional") && (
+                  <Button size="small" color="error" onClick={() => onDelete(params.row.id)}>Eliminar</Button>
+                )}
               </Box>
             ),
           },

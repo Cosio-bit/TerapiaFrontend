@@ -8,7 +8,12 @@ import {
   Button,
 } from "@mui/material";
 
-const CategoriaFormDialog = ({ open, onClose, onSave, categoria, editing }) => {
+import { useAuth } from "../components/authcontext";
+import { can, canEditField } from "../can"; // Asegúrate de importar desde tu helper de permisos
+
+const CategoriaFormDialog = ({ open, onClose, onSave, categoria, editing, setSnackbar }) => {
+  const { role } = useAuth();
+
   const [formCategoria, setFormCategoria] = useState({
     nombre: "",
     descripcion: "",
@@ -19,13 +24,16 @@ const CategoriaFormDialog = ({ open, onClose, onSave, categoria, editing }) => {
     if (categoria) {
       setFormCategoria(categoria);
     } else {
-      setFormCategoria({
-        nombre: "",
-        descripcion: "",
-      });
+      setFormCategoria({ nombre: "", descripcion: "" });
     }
     setErrors({});
   }, [categoria]);
+
+  const canEditNombre = canEditField(role, "categoria", "nombre");
+  const canEditDescripcion = canEditField(role, "categoria", "descripcion");
+  const canSave = editing
+    ? can(role, "edit", "categoria")
+    : can(role, "create", "categoria");
 
   const validateForm = () => {
     const newErrors = {};
@@ -36,6 +44,15 @@ const CategoriaFormDialog = ({ open, onClose, onSave, categoria, editing }) => {
   };
 
   const handleSave = () => {
+    if (!canSave) {
+      setSnackbar?.({
+        open: true,
+        message: "No tienes permiso para realizar esta acción.",
+        severity: "error",
+      });
+      return;
+    }
+
     if (validateForm()) {
       onSave(formCategoria);
     }
@@ -51,10 +68,12 @@ const CategoriaFormDialog = ({ open, onClose, onSave, categoria, editing }) => {
           fullWidth
           value={formCategoria.nombre}
           onChange={(e) =>
+            canEditNombre &&
             setFormCategoria({ ...formCategoria, nombre: e.target.value })
           }
           error={!!errors.nombre}
           helperText={errors.nombre}
+          disabled={!canEditNombre}
         />
         <TextField
           margin="dense"
@@ -63,18 +82,22 @@ const CategoriaFormDialog = ({ open, onClose, onSave, categoria, editing }) => {
           multiline
           value={formCategoria.descripcion}
           onChange={(e) =>
-            setFormCategoria({
-              ...formCategoria,
-              descripcion: e.target.value,
-            })
+            canEditDescripcion &&
+            setFormCategoria({ ...formCategoria, descripcion: e.target.value })
           }
           error={!!errors.descripcion}
           helperText={errors.descripcion}
+          disabled={!canEditDescripcion}
         />
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancelar</Button>
-        <Button onClick={handleSave} variant="contained" color="primary">
+        <Button
+          onClick={handleSave}
+          variant="contained"
+          color="primary"
+          disabled={!canSave}
+        >
           {editing ? "Guardar Cambios" : "Crear Categoría"}
         </Button>
       </DialogActions>

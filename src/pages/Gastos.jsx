@@ -9,8 +9,12 @@ import {
 import { getAllProveedores } from "../api/proveedorApi";
 import GastosTable from "../components/GastosTable";
 import GastoFormDialog from "../components/GastoFormDialog";
+import { useAuth } from "../components/authcontext";
+import { can } from "../can";
 
 const Gastos = () => {
+  const { role } = useAuth();
+
   const [gastos, setGastos] = useState([]);
   const [proveedores, setProveedores] = useState([]);
   const [currentGasto, setCurrentGasto] = useState(null);
@@ -26,8 +30,6 @@ const Gastos = () => {
   const fetchGastosData = async () => {
     try {
       const data = await fetchGastos();
-      console.log("📤 API Response for Gastos:", JSON.stringify(data, null, 2));
-
       if (Array.isArray(data)) {
         setGastos(data);
       } else {
@@ -51,19 +53,23 @@ const Gastos = () => {
   };
 
   const handleSaveGasto = async (gasto) => {
-    try {
-      console.log("📤 Saving Gasto:", JSON.stringify(gasto, null, 2));
+    if (editing && !can(role, "edit", "gasto")) {
+      setSnackbar({ open: true, message: "No tienes permiso para editar gastos.", severity: "error" });
+      return;
+    }
+    if (!editing && !can(role, "create", "gasto")) {
+      setSnackbar({ open: true, message: "No tienes permiso para crear gastos.", severity: "error" });
+      return;
+    }
 
+    try {
       if (editing) {
         if (!currentGasto?.id_gasto) {
-          console.error("⚠️ No se puede actualizar, falta ID de Gasto.");
           setSnackbar({ open: true, message: "Error: No se puede actualizar, falta ID.", severity: "error" });
           return;
         }
-        console.log("🛠 Updating Gasto with ID:", currentGasto.id_gasto);
         await updateGasto(currentGasto.id_gasto, gasto);
       } else {
-        console.log("🆕 Creating new Gasto");
         await createGasto(gasto);
       }
 
@@ -81,16 +87,14 @@ const Gastos = () => {
   };
 
   const handleEditGasto = (gasto) => {
-    console.log("✏️ Editing Gasto:", JSON.stringify(gasto, null, 2));
-
-    if (!gasto.id && !gasto.id_gasto) {
-      console.error("⚠️ Error: No se encontró el ID de Gasto.");
+    if (!can(role, "edit", "gasto")) {
+      setSnackbar({ open: true, message: "No tienes permiso para editar gastos.", severity: "error" });
       return;
     }
 
     const updatedGasto = {
       id_gasto: gasto.id_gasto || gasto.id,
-      proveedor: gasto.proveedor ? gasto.proveedor : {}, // Siempre dejamos el objeto proveedor para mantenerlo consistente
+      proveedor: gasto.proveedor || {},
       nombre: gasto.nombre || "",
       descripcion: gasto.descripcion || "",
       monto: typeof gasto.monto === "string"
@@ -99,15 +103,17 @@ const Gastos = () => {
       fecha: gasto.fecha || "",
     };
 
-    console.log("📝 Formulario cargado con datos (AFTER FIX):", JSON.stringify(updatedGasto, null, 2));
-
     setCurrentGasto(updatedGasto);
     setEditing(true);
-
-    setTimeout(() => setOpenDialog(true), 100); // Esperamos que proveedores estén cargados
+    setTimeout(() => setOpenDialog(true), 100);
   };
 
   const handleDeleteGasto = async (id) => {
+    if (!can(role, "delete", "gasto")) {
+      setSnackbar({ open: true, message: "No tienes permiso para eliminar gastos.", severity: "error" });
+      return;
+    }
+
     try {
       await deleteGasto(id);
       fetchGastosData();
@@ -123,17 +129,20 @@ const Gastos = () => {
       <Typography variant="h4" gutterBottom>
         Gestión de Gastos
       </Typography>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => {
-          setEditing(false);
-          setCurrentGasto(null);
-          setOpenDialog(true);
-        }}
-      >
-        Crear Gasto
-      </Button>
+
+      {can(role, "create", "gasto") && (
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            setEditing(false);
+            setCurrentGasto(null);
+            setOpenDialog(true);
+          }}
+        >
+          Crear Gasto
+        </Button>
+      )}
 
       <GastosTable gastos={gastos} onEdit={handleEditGasto} onDelete={handleDeleteGasto} />
 
@@ -152,7 +161,10 @@ const Gastos = () => {
         autoHideDuration={6000}
         onClose={() => setSnackbar({ open: false, message: "", severity: "success" })}
       >
-        <Alert onClose={() => setSnackbar({ open: false, message: "", severity: "success" })} severity={snackbar.severity}>
+        <Alert
+          onClose={() => setSnackbar({ open: false, message: "", severity: "success" })}
+          severity={snackbar.severity}
+        >
           {snackbar.message}
         </Alert>
       </Snackbar>

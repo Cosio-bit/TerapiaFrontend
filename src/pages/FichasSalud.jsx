@@ -9,8 +9,12 @@ import {
 import { getAllClientes } from "../api/clienteApi";
 import FichasSaludTable from "../components/FichasSaludTable";
 import FichaSaludFormDialog from "../components/FichaSaludFormDialog";
+import { useAuth } from "../components/authcontext";
+import { can } from "../can";
 
 const FichasSalud = () => {
+  const { role } = useAuth();
+
   const [fichasSalud, setFichasSalud] = useState([]);
   const [clientes, setClientes] = useState([]);
   const [currentFicha, setCurrentFicha] = useState(null);
@@ -18,7 +22,6 @@ const FichasSalud = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
 
-  // Cargar datos iniciales
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -40,8 +43,16 @@ const FichasSalud = () => {
     fetchData();
   }, []);
 
-  // Guardar o actualizar ficha
   const handleSaveFicha = async (ficha) => {
+    if (editing && !can(role, "edit", "fichasalud")) {
+      setSnackbar({ open: true, message: "No tienes permiso para editar fichas.", severity: "error" });
+      return;
+    }
+    if (!editing && !can(role, "create", "fichasalud")) {
+      setSnackbar({ open: true, message: "No tienes permiso para crear fichas.", severity: "error" });
+      return;
+    }
+
     try {
       if (editing) {
         await updateFichaSalud(currentFicha.id_fichasalud, ficha);
@@ -64,15 +75,23 @@ const FichasSalud = () => {
     }
   };
 
-  // Editar ficha
   const handleEditFicha = (ficha) => {
+    if (!can(role, "edit", "fichasalud")) {
+      setSnackbar({ open: true, message: "No tienes permiso para editar fichas.", severity: "error" });
+      return;
+    }
+
     setEditing(true);
     setCurrentFicha(ficha);
     setOpenDialog(true);
   };
 
-  // Eliminar ficha
   const handleDeleteFicha = async (id) => {
+    if (!can(role, "delete", "fichasalud")) {
+      setSnackbar({ open: true, message: "No tienes permiso para eliminar fichas.", severity: "error" });
+      return;
+    }
+
     try {
       await deleteFichaSalud(id);
       setFichasSalud(await getAllFichasSalud());
@@ -90,7 +109,6 @@ const FichasSalud = () => {
     }
   };
 
-  // Cerrar Snackbar
   const handleCloseSnackbar = () => {
     setSnackbar({ open: false, message: "", severity: "success" });
   };
@@ -100,17 +118,20 @@ const FichasSalud = () => {
       <Typography variant="h4" gutterBottom>
         Gestión de Fichas de Salud
       </Typography>
-      {/*<Button
-        variant="contained"
-        color="primary"
-        onClick={() => {
-          setEditing(false);
-          setCurrentFicha(null);
-          setOpenDialog(true);
-        }}
-      >
-        Crear Ficha
-      </Button>*/}
+
+      {can(role, "create", "fichasalud") && (
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            setEditing(false);
+            setCurrentFicha(null);
+            setOpenDialog(true);
+          }}
+        >
+          Crear Ficha
+        </Button>
+      )}
 
       <FichasSaludTable
         fichasSalud={fichasSalud}
@@ -125,6 +146,7 @@ const FichasSalud = () => {
         fichaSalud={currentFicha}
         clientes={clientes}
         editing={editing}
+        setSnackbar={setSnackbar}
       />
 
       <Snackbar

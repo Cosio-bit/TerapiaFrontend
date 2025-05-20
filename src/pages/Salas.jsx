@@ -9,13 +9,17 @@ import {
 import { getAllProveedores } from "../api/proveedorApi";
 import SalasTable from "../components/SalasTable";
 import SalaFormDialog from "../components/SalaFormDialog";
+import { useAuth } from "../components/authcontext";
+import { can } from "../can"; // ✅ Control de permisos
 
 const Salas = () => {
+  const { role } = useAuth();
+
   const [salas, setSalas] = useState([]);
   const [proveedores, setProveedores] = useState([]);
   const [currentSala, setCurrentSala] = useState(null);
   const [editing, setEditing] = useState(false);
-  const [openDialog, setOpenDialog,] = useState(false);
+  const [openDialog, setOpenDialog] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
 
   useEffect(() => {
@@ -26,16 +30,8 @@ const Salas = () => {
   const fetchSalasData = async () => {
     try {
       const data = await fetchSalas();
-      console.log("📤 API Response for Salas:", JSON.stringify(data, null, 2));
-
-      if (Array.isArray(data)) {
-        setSalas(data);
-      } else {
-        console.error("❌ API returned unexpected data structure:", data);
-        setSalas([]);
-      }
+      setSalas(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error("❌ Error fetching salas:", error);
       setSnackbar({ open: true, message: "Error al cargar salas.", severity: "error" });
     }
   };
@@ -45,25 +41,19 @@ const Salas = () => {
       const data = await getAllProveedores();
       setProveedores(data || []);
     } catch (error) {
-      console.error("❌ Error fetching proveedores:", error);
       setSnackbar({ open: true, message: "Error al cargar proveedores.", severity: "error" });
     }
   };
 
   const handleSaveSala = async (sala) => {
     try {
-      console.log("📤 Saving Sala:", JSON.stringify(sala, null, 2));
-
       if (editing) {
         if (!currentSala?.id_sala) {
-          console.error("⚠️ No se puede actualizar, falta ID de Sala.");
           setSnackbar({ open: true, message: "Error: No se puede actualizar, falta ID.", severity: "error" });
           return;
         }
-        console.log("🛠 Updating Sala with ID:", currentSala.id_sala);
         await updateSala(currentSala.id_sala, sala);
       } else {
-        console.log("🆕 Creating new Sala");
         await createSala(sala);
       }
 
@@ -75,22 +65,14 @@ const Salas = () => {
         severity: "success",
       });
     } catch (error) {
-      console.error("❌ Error saving sala:", error);
       setSnackbar({ open: true, message: "Error al guardar la sala.", severity: "error" });
     }
   };
 
   const handleEditSala = (sala) => {
-    console.log("✏️ Editing Sala:", JSON.stringify(sala, null, 2));
-
-    if (!sala.id && !sala.id_sala) {
-      console.error("⚠️ Error: No se encontró el ID de Sala.");
-      return;
-    }
-
     const updatedSala = {
       id_sala: sala.id_sala || sala.id,
-      proveedor: sala.proveedor ? sala.proveedor : {}, // ✅ Ensure proveedor is an object, even if it's just an empty object
+      proveedor: sala.proveedor || {},
       nombre: sala.nombre || "",
       capacidad: sala.capacidad || 0,
       precio: typeof sala.precio === "string"
@@ -100,11 +82,8 @@ const Salas = () => {
       estado: sala.estado || "",
     };
 
-    console.log("📝 Formulario cargado con datos (AFTER FIX):", JSON.stringify(updatedSala, null, 2));
-
     setCurrentSala(updatedSala);
     setEditing(true);
-
     setTimeout(() => setOpenDialog(true), 100);
   };
 
@@ -114,7 +93,6 @@ const Salas = () => {
       fetchSalasData();
       setSnackbar({ open: true, message: "Sala eliminada con éxito.", severity: "success" });
     } catch (error) {
-      console.error("❌ Error deleting sala:", error);
       setSnackbar({ open: true, message: "Error al eliminar la sala.", severity: "error" });
     }
   };
@@ -124,17 +102,20 @@ const Salas = () => {
       <Typography variant="h4" gutterBottom>
         Gestión de Salas
       </Typography>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => {
-          setEditing(false);
-          setCurrentSala(null);
-          setOpenDialog(true);
-        }}
-      >
-        Crear Sala
-      </Button>
+
+      {can(role, "create", "sala") && (
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            setEditing(false);
+            setCurrentSala(null);
+            setOpenDialog(true);
+          }}
+        >
+          Crear Sala
+        </Button>
+      )}
 
       <SalasTable salas={salas} onEdit={handleEditSala} onDelete={handleDeleteSala} />
 

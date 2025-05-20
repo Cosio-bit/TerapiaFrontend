@@ -9,8 +9,12 @@ import {
 import { getAllProductos } from "../api/productoApi";
 import ProductosCompradosTable from "../components/ProductosCompradosTable";
 import ProductoCompradoFormDialog from "../components/ProductoCompradoFormDialog";
+import { useAuth } from "../components/authcontext";
+import { can } from "../can";
 
 const ProductosComprados = () => {
+  const { role } = useAuth();
+
   const [productosComprados, setProductosComprados] = useState([]);
   const [productos, setProductos] = useState([]);
   const [currentProductoComprado, setCurrentProductoComprado] = useState(null);
@@ -30,16 +34,8 @@ const ProductosComprados = () => {
   const fetchProductosCompradosData = async () => {
     try {
       const data = await getAllProductosComprados();
-      console.log("📤 API Response for Productos Comprados:", JSON.stringify(data, null, 2));
-
-      if (Array.isArray(data)) {
-        setProductosComprados(data);
-      } else {
-        console.error("❌ Unexpected data structure:", data);
-        setProductosComprados([]);
-      }
+      setProductosComprados(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error("❌ Error fetching productos comprados:", error);
       setSnackbar({
         open: true,
         message: "Error al cargar productos comprados.",
@@ -53,7 +49,6 @@ const ProductosComprados = () => {
       const data = await getAllProductos();
       setProductos(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error("❌ Error fetching productos:", error);
       setSnackbar({
         open: true,
         message: "Error al cargar productos.",
@@ -63,23 +58,23 @@ const ProductosComprados = () => {
   };
 
   const handleSaveProductoComprado = async (productoComprado) => {
-    try {
-      console.log("📤 Saving Producto Comprado:", JSON.stringify(productoComprado, null, 2));
+    if (editing && !can(role, "edit", "productocomprado")) {
+      setSnackbar({ open: true, message: "No tienes permiso para editar.", severity: "error" });
+      return;
+    }
+    if (!editing && !can(role, "create", "productocomprado")) {
+      setSnackbar({ open: true, message: "No tienes permiso para crear.", severity: "error" });
+      return;
+    }
 
+    try {
       if (editing) {
         if (!currentProductoComprado?.id_producto_comprado) {
-          console.error("⚠️ Missing ID for update.");
-          setSnackbar({
-            open: true,
-            message: "Error: Falta ID para actualizar.",
-            severity: "error",
-          });
+          setSnackbar({ open: true, message: "Error: Falta ID para actualizar.", severity: "error" });
           return;
         }
-        console.log("🛠 Updating Producto Comprado ID:", currentProductoComprado.id_producto_comprado);
         await updateProductoComprado(currentProductoComprado.id_producto_comprado, productoComprado);
       } else {
-        console.log("🆕 Creating new Producto Comprado");
         await createProductoComprado(productoComprado);
       }
 
@@ -87,36 +82,31 @@ const ProductosComprados = () => {
       setOpenDialog(false);
       setSnackbar({
         open: true,
-        message: editing ? "Producto comprado actualizado con éxito." : "Producto comprado creado con éxito.",
+        message: editing ? "Producto actualizado." : "Producto creado.",
         severity: "success",
       });
     } catch (error) {
-      console.error("❌ Error saving producto comprado:", error);
       setSnackbar({
         open: true,
-        message: "Error al guardar el producto comprado.",
+        message: "Error al guardar el producto.",
         severity: "error",
       });
     }
   };
 
   const handleEditProductoComprado = (productoComprado) => {
-    console.log("✏️ Editing Producto Comprado:", JSON.stringify(productoComprado, null, 2));
-
-    if (!productoComprado.id_producto_comprado) {
-      console.error("⚠️ Error: No se encontró el ID de Producto Comprado.");
+    if (!can(role, "edit", "productocomprado")) {
+      setSnackbar({ open: true, message: "No tienes permiso para editar.", severity: "error" });
       return;
     }
 
     const updatedProductoComprado = {
       id_producto_comprado: productoComprado.id_producto_comprado,
-      producto: productoComprado.producto || {}, // Ensure producto is an object
+      producto: productoComprado.producto || {},
       nombre: productoComprado.nombre || "",
       precio: productoComprado.precio || 0,
       cantidad: productoComprado.cantidad || 1,
     };
-
-    console.log("📝 Formulario cargado con datos:", JSON.stringify(updatedProductoComprado, null, 2));
 
     setCurrentProductoComprado(updatedProductoComprado);
     setEditing(true);
@@ -124,19 +114,19 @@ const ProductosComprados = () => {
   };
 
   const handleDeleteProductoComprado = async (id) => {
+    if (!can(role, "delete", "productocomprado")) {
+      setSnackbar({ open: true, message: "No tienes permiso para eliminar.", severity: "error" });
+      return;
+    }
+
     try {
       await deleteProductoComprado(id);
       fetchProductosCompradosData();
-      setSnackbar({
-        open: true,
-        message: "Producto comprado eliminado con éxito.",
-        severity: "success",
-      });
+      setSnackbar({ open: true, message: "Producto eliminado.", severity: "success" });
     } catch (error) {
-      console.error("❌ Error deleting producto comprado:", error);
       setSnackbar({
         open: true,
-        message: "Error al eliminar el producto comprado.",
+        message: "Error al eliminar el producto.",
         severity: "error",
       });
     }
@@ -147,17 +137,20 @@ const ProductosComprados = () => {
       <Typography variant="h4" gutterBottom>
         Gestión de Productos Comprados
       </Typography>
-      {/*<Button
-        variant="contained"
-        color="primary"
-        onClick={() => {
-          setEditing(false);
-          setCurrentProductoComprado(null);
-          setOpenDialog(true);
-        }}
-      >
-        Crear Producto Comprado
-      </Button>*/}
+
+      {can(role, "create", "productocomprado") && (
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            setEditing(false);
+            setCurrentProductoComprado(null);
+            setOpenDialog(true);
+          }}
+        >
+          Crear Producto Comprado
+        </Button>
+      )}
 
       <ProductosCompradosTable
         productosComprados={productosComprados}
@@ -180,7 +173,10 @@ const ProductosComprados = () => {
         autoHideDuration={6000}
         onClose={() => setSnackbar({ open: false, message: "", severity: "success" })}
       >
-        <Alert onClose={() => setSnackbar({ open: false, message: "", severity: "success" })} severity={snackbar.severity}>
+        <Alert
+          onClose={() => setSnackbar({ open: false, message: "", severity: "success" })}
+          severity={snackbar.severity}
+        >
           {snackbar.message}
         </Alert>
       </Snackbar>

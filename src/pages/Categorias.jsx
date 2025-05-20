@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Box, Button, Snackbar, Alert, Typography } from "@mui/material";
 import {
-  getAllCategorias, // Nombre estandarizado
+  getAllCategorias,
   createCategoria,
   updateCategoria,
   deleteCategoria,
@@ -9,38 +9,52 @@ import {
 import CategoriasTable from "../components/CategoriasTable";
 import CategoriaFormDialog from "../components/CategoriaFormDialog";
 
+import { useAuth } from "../components/authcontext";
+import { can } from "../can";
+
 const Categorias = () => {
+  const { role } = useAuth();
+
   const [categorias, setCategorias] = useState([]);
   const [currentCategoria, setCurrentCategoria] = useState(null);
   const [editing, setEditing] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
 
-  useEffect(() => {
-    const fetchCategorias = async () => {
-      try {
-        const data = await getAllCategorias(); // Nombre actualizado
-        setCategorias(data);
-      } catch (error) {
-        setSnackbar({
-          open: true,
-          message: "Error al cargar las categorías.",
-          severity: "error",
-        });
-      }
-    };
+  const fetchCategorias = async () => {
+    try {
+      const data = await getAllCategorias();
+      setCategorias(data);
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: "Error al cargar las categorías.",
+        severity: "error",
+      });
+    }
+  };
 
+  useEffect(() => {
     fetchCategorias();
   }, []);
 
   const handleSaveCategoria = async (categoria) => {
+    if (editing && !can(role, "edit", "categoria")) {
+      setSnackbar({ open: true, message: "No tienes permiso para editar categorías.", severity: "error" });
+      return;
+    }
+    if (!editing && !can(role, "create", "categoria")) {
+      setSnackbar({ open: true, message: "No tienes permiso para crear categorías.", severity: "error" });
+      return;
+    }
+
     try {
       if (editing) {
         await updateCategoria(currentCategoria.id_categoria, categoria);
       } else {
         await createCategoria(categoria);
       }
-      setCategorias(await getAllCategorias()); // Nombre actualizado
+      fetchCategorias();
       setOpenDialog(false);
       setSnackbar({
         open: true,
@@ -57,15 +71,25 @@ const Categorias = () => {
   };
 
   const handleEditCategoria = (categoria) => {
+    if (!can(role, "edit", "categoria")) {
+      setSnackbar({ open: true, message: "No tienes permiso para editar categorías.", severity: "error" });
+      return;
+    }
+
     setEditing(true);
     setCurrentCategoria(categoria);
     setOpenDialog(true);
   };
 
   const handleDeleteCategoria = async (id) => {
+    if (!can(role, "delete", "categoria")) {
+      setSnackbar({ open: true, message: "No tienes permiso para eliminar categorías.", severity: "error" });
+      return;
+    }
+
     try {
       await deleteCategoria(id);
-      setCategorias(await getAllCategorias()); // Nombre actualizado
+      fetchCategorias();
       setSnackbar({
         open: true,
         message: "Categoría eliminada con éxito.",
@@ -87,17 +111,20 @@ const Categorias = () => {
       <Typography variant="h4" gutterBottom>
         Gestión de Categorías
       </Typography>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => {
-          setEditing(false);
-          setCurrentCategoria(null);
-          setOpenDialog(true);
-        }}
-      >
-        Crear Categoría
-      </Button>
+
+      {can(role, "create", "categoria") && (
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            setEditing(false);
+            setCurrentCategoria(null);
+            setOpenDialog(true);
+          }}
+        >
+          Crear Categoría
+        </Button>
+      )}
 
       <CategoriasTable
         categorias={categorias}
@@ -111,6 +138,7 @@ const Categorias = () => {
         onSave={handleSaveCategoria}
         categoria={currentCategoria}
         editing={editing}
+        setSnackbar={setSnackbar}
       />
 
       <Snackbar

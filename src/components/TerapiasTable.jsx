@@ -1,8 +1,11 @@
 import React from "react";
 import { Box, Button } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
+import { useAuth } from "../components/authcontext";
+import { can } from "../can";
 
 const TerapiasTable = ({ terapias, onEdit, onDelete }) => {
+  const { role } = useAuth();
   const rows = Array.isArray(terapias) ? terapias : [];
 
   return (
@@ -10,9 +13,9 @@ const TerapiasTable = ({ terapias, onEdit, onDelete }) => {
       <DataGrid
         rows={rows.map((terapia) => ({
           ...terapia,
-          id: terapia?.id_terapia || Math.random(), // Ensure each row has an ID
-          presencial: terapia?.presencial || "No especificado", // Handle missing values
-          variantes: terapia?.variantes || [], // Ensure variantes is always an array
+          id: terapia?.id_terapia || Math.random(),
+          presencial: terapia?.presencial || "No especificado",
+          variantes: terapia?.variantes || [],
         }))}
         columns={[
           { field: "nombre", headerName: "Nombre", flex: 1 },
@@ -41,12 +44,16 @@ const TerapiasTable = ({ terapias, onEdit, onDelete }) => {
             flex: 1,
             renderCell: (params) => (
               <Box display="flex" gap={1}>
-                <Button size="small" onClick={() => onEdit(params.row)}>
-                  Editar
-                </Button>
-                <Button size="small" color="error" onClick={() => onDelete(params.row.id)}>
-                  Eliminar
-                </Button>
+                {can(role, "edit", "terapia") && (
+                  <Button size="small" onClick={() => onEdit(params.row)}>
+                    Editar
+                  </Button>
+                )}
+                {can(role, "delete", "terapia") && (
+                  <Button size="small" color="error" onClick={() => onDelete(params.row.id)}>
+                    Eliminar
+                  </Button>
+                )}
               </Box>
             ),
           },

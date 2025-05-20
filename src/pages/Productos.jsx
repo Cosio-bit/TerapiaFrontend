@@ -9,8 +9,12 @@ import {
 import { getAllProveedores } from "../api/proveedorApi";
 import ProductosTable from "../components/ProductosTable";
 import ProductoFormDialog from "../components/ProductoFormDialog";
+import { useAuth } from "../components/authcontext";
+import { can } from "../can";
 
 const Productos = () => {
+  const { role } = useAuth();
+
   const [productos, setProductos] = useState([]);
   const [proveedores, setProveedores] = useState([]);
   const [currentProducto, setCurrentProducto] = useState(null);
@@ -26,16 +30,8 @@ const Productos = () => {
   const fetchProductosData = async () => {
     try {
       const data = await fetchProductos();
-      console.log("📤 API Response for Productos:", JSON.stringify(data, null, 2));
-
-      if (Array.isArray(data)) {
-        setProductos(data);
-      } else {
-        console.error("❌ API returned unexpected data structure:", data);
-        setProductos([]);
-      }
+      setProductos(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error("❌ Error fetching productos:", error);
       setSnackbar({ open: true, message: "Error al cargar productos.", severity: "error" });
     }
   };
@@ -45,25 +41,28 @@ const Productos = () => {
       const data = await getAllProveedores();
       setProveedores(data || []);
     } catch (error) {
-      console.error("❌ Error fetching proveedores:", error);
       setSnackbar({ open: true, message: "Error al cargar proveedores.", severity: "error" });
     }
   };
 
   const handleSaveProducto = async (producto) => {
-    try {
-      console.log("📤 Saving Producto:", JSON.stringify(producto, null, 2));
+    if (editing && !can(role, "edit", "producto")) {
+      setSnackbar({ open: true, message: "No tienes permiso para editar productos.", severity: "error" });
+      return;
+    }
+    if (!editing && !can(role, "create", "producto")) {
+      setSnackbar({ open: true, message: "No tienes permiso para crear productos.", severity: "error" });
+      return;
+    }
 
+    try {
       if (editing) {
         if (!currentProducto?.id_producto) {
-          console.error("⚠️ No se puede actualizar, falta ID de Producto.");
-          setSnackbar({ open: true, message: "Error: No se puede actualizar, falta ID.", severity: "error" });
+          setSnackbar({ open: true, message: "Error: Falta ID para actualizar.", severity: "error" });
           return;
         }
-        console.log("🛠 Updating Producto with ID:", currentProducto.id_producto);
         await updateProducto(currentProducto.id_producto, producto);
       } else {
-        console.log("🆕 Creating new Producto");
         await createProducto(producto);
       }
 
@@ -75,22 +74,19 @@ const Productos = () => {
         severity: "success",
       });
     } catch (error) {
-      console.error("❌ Error saving producto:", error);
       setSnackbar({ open: true, message: "Error al guardar el producto.", severity: "error" });
     }
   };
 
   const handleEditProducto = (producto) => {
-    console.log("✏️ Editing Producto:", JSON.stringify(producto, null, 2));
-
-    if (!producto.id && !producto.id_producto) {
-      console.error("⚠️ Error: No se encontró el ID de Producto.");
+    if (!can(role, "edit", "producto")) {
+      setSnackbar({ open: true, message: "No tienes permiso para editar productos.", severity: "error" });
       return;
     }
 
     const updatedProducto = {
       id_producto: producto.id_producto || producto.id,
-      proveedor: producto.proveedor ? producto.proveedor : {}, // ✅ Ensure proveedor is an object, even if it's just an empty object
+      proveedor: producto.proveedor ? producto.proveedor : {},
       nombre: producto.nombre || "",
       descripcion: producto.descripcion || "",
       precio: typeof producto.precio === "string"
@@ -101,21 +97,22 @@ const Productos = () => {
         : producto.stock || 0,
     };
 
-    console.log("📝 Formulario cargado con datos (AFTER FIX):", JSON.stringify(updatedProducto, null, 2));
-
     setCurrentProducto(updatedProducto);
     setEditing(true);
-
     setTimeout(() => setOpenDialog(true), 100);
-};
+  };
 
   const handleDeleteProducto = async (id) => {
+    if (!can(role, "delete", "producto")) {
+      setSnackbar({ open: true, message: "No tienes permiso para eliminar productos.", severity: "error" });
+      return;
+    }
+
     try {
       await deleteProducto(id);
       fetchProductosData();
       setSnackbar({ open: true, message: "Producto eliminado con éxito.", severity: "success" });
     } catch (error) {
-      console.error("❌ Error deleting producto:", error);
       setSnackbar({ open: true, message: "Error al eliminar el producto.", severity: "error" });
     }
   };
@@ -125,17 +122,20 @@ const Productos = () => {
       <Typography variant="h4" gutterBottom>
         Gestión de Productos
       </Typography>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => {
-          setEditing(false);
-          setCurrentProducto(null);
-          setOpenDialog(true);
-        }}
-      >
-        Crear Producto
-      </Button>
+
+      {can(role, "create", "producto") && (
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            setEditing(false);
+            setCurrentProducto(null);
+            setOpenDialog(true);
+          }}
+        >
+          Crear Producto
+        </Button>
+      )}
 
       <ProductosTable productos={productos} onEdit={handleEditProducto} onDelete={handleDeleteProducto} />
 

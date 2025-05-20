@@ -1,7 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { Dialog, DialogActions, DialogContent, DialogTitle, TextField, Button } from "@mui/material";
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+  Button
+} from "@mui/material";
+import { useAuth } from "../components/authcontext";
+import { canEditField } from "../can";
 
 const UsuarioFormDialog = ({ open, onClose, onSave, usuario, editing }) => {
+  const { role } = useAuth();
+
   const [formUsuario, setFormUsuario] = useState({
     nombre: "",
     rut: "",
@@ -34,18 +45,30 @@ const UsuarioFormDialog = ({ open, onClose, onSave, usuario, editing }) => {
     onSave(formUsuario);
   };
 
+  const renderField = (name, label, type = "text") =>
+    canEditField(role, "usuario", name) && (
+      <TextField
+        label={label}
+        type={type}
+        fullWidth
+        margin="dense"
+        value={formUsuario[name]}
+        onChange={(e) => setFormUsuario({ ...formUsuario, [name]: e.target.value })}
+      />
+    );
+
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>{editing ? "Editar Usuario" : "Crear Usuario"}</DialogTitle>
       <DialogContent>
-        <TextField label="Nombre" fullWidth margin="dense" value={formUsuario.nombre} onChange={(e) => setFormUsuario({ ...formUsuario, nombre: e.target.value })} />
-        <TextField label="RUT" fullWidth margin="dense" value={formUsuario.rut} onChange={(e) => setFormUsuario({ ...formUsuario, rut: e.target.value })} />
-        <TextField label="Email" fullWidth margin="dense" value={formUsuario.email} onChange={(e) => setFormUsuario({ ...formUsuario, email: e.target.value })} />
-        <TextField label="Teléfono" fullWidth margin="dense" value={formUsuario.telefono} onChange={(e) => setFormUsuario({ ...formUsuario, telefono: e.target.value })} />
-        <TextField label="Dirección" fullWidth margin="dense" value={formUsuario.direccion} onChange={(e) => setFormUsuario({ ...formUsuario, direccion: e.target.value })} />
-        <TextField label="Sexo" fullWidth margin="dense" value={formUsuario.sexo} onChange={(e) => setFormUsuario({ ...formUsuario, sexo: e.target.value })} />
-        <TextField label="Fecha de Nacimiento" type="date" fullWidth margin="dense" value={formUsuario.fecha_nacimiento} onChange={(e) => setFormUsuario({ ...formUsuario, fecha_nacimiento: e.target.value })} />
-        <TextField label="Saldo" type="number" fullWidth margin="dense" value={formUsuario.saldo} onChange={(e) => setFormUsuario({ ...formUsuario, saldo: e.target.value })} />
+        {renderField("nombre", "Nombre")}
+        {renderField("rut", "RUT")}
+        {renderField("email", "Email")}
+        {renderField("telefono", "Teléfono")}
+        {renderField("direccion", "Dirección")}
+        {renderField("sexo", "Sexo")}
+        {renderField("fecha_nacimiento", "Fecha de Nacimiento", "date")}
+        {renderField("saldo", "Saldo", "number")}
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancelar</Button>

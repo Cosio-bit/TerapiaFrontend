@@ -7,15 +7,17 @@ import {
 } from "../api/varianteApi";
 import VariantesTable from "../components/VariantesTable";
 import VarianteFormDialog from "../components/VarianteFormDialog";
+import { useAuth } from "../components/authcontext";
+import { can } from "../can";
 
 const Variantes = ({ idTerapia }) => {
+  const { role } = useAuth();
   const [variantes, setVariantes] = useState([]);
   const [currentVariante, setCurrentVariante] = useState(null);
   const [editing, setEditing] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
 
-  // Cargar las variantes al montar el componente o al cambiar el idTerapia
   useEffect(() => {
     const fetchVariantes = async () => {
       try {
@@ -33,7 +35,6 @@ const Variantes = ({ idTerapia }) => {
     if (idTerapia) fetchVariantes();
   }, [idTerapia]);
 
-  // Guardar o crear una variante
   const handleSaveVariante = async (variante) => {
     try {
       await createVariante({ ...variante, idTerapia });
@@ -53,14 +54,12 @@ const Variantes = ({ idTerapia }) => {
     }
   };
 
-  // Editar variante
   const handleEditVariante = (variante) => {
     setEditing(true);
     setCurrentVariante(variante);
     setOpenDialog(true);
   };
 
-  // Eliminar variante
   const handleDeleteVariante = async (idVariante) => {
     try {
       await deleteVariante(idVariante);
@@ -86,17 +85,20 @@ const Variantes = ({ idTerapia }) => {
       <Typography variant="h4" gutterBottom>
         Gestión de Variantes
       </Typography>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => {
-          setEditing(false);
-          setCurrentVariante(null);
-          setOpenDialog(true);
-        }}
-      >
-        Crear Variante
-      </Button>
+
+      {can(role, "create", "variante") && (
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            setEditing(false);
+            setCurrentVariante(null);
+            setOpenDialog(true);
+          }}
+        >
+          Crear Variante
+        </Button>
+      )}
 
       <VariantesTable variantes={variantes} onEdit={handleEditVariante} onDelete={handleDeleteVariante} />
 

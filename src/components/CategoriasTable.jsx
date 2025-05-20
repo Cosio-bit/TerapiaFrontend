@@ -1,8 +1,12 @@
 import React from "react";
 import { Box, Button } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
+import { useAuth } from "../components/authcontext";
+import { can } from "../can";
 
 const CategoriasTable = ({ categorias, onEdit, onDelete }) => {
+  const { role } = useAuth();
+
   return (
     <Box mt={3}>
       <DataGrid
@@ -20,19 +24,20 @@ const CategoriasTable = ({ categorias, onEdit, onDelete }) => {
             flex: 1,
             renderCell: (params) => (
               <Box display="flex" gap={1}>
-                <Button
-                  size="small"
-                  onClick={() => onEdit(params.row)}
-                >
-                  Editar
-                </Button>
-                <Button
-                  size="small"
-                  color="error"
-                  onClick={() => onDelete(params.row.id)}
-                >
-                  Eliminar
-                </Button>
+                {can(role, "edit", "categoria") && (
+                  <Button size="small" onClick={() => onEdit(params.row)}>
+                    Editar
+                  </Button>
+                )}
+                {can(role, "delete", "categoria") && (
+                  <Button
+                    size="small"
+                    color="error"
+                    onClick={() => onDelete(params.row.id)}
+                  >
+                    Eliminar
+                  </Button>
+                )}
               </Box>
             ),
           },

@@ -13,7 +13,9 @@ import {
   FormHelperText,
 } from "@mui/material";
 import UsuarioFormDialog from "./UsuarioFormDialog";
-import { createUsuario } from "../api/usuarioApi"; // ✅ importar función para guardar usuario
+import { createUsuario } from "../api/usuarioApi";
+import { useAuth } from "../components/authcontext";
+import { canEditField } from "../can";
 
 const ProveedorFormDialog = ({
   open,
@@ -21,9 +23,11 @@ const ProveedorFormDialog = ({
   onSave,
   proveedor,
   usuarios,
-  setUsuarios, // ✅ necesario para actualizar lista
+  setUsuarios,
   editing,
 }) => {
+  const { role } = useAuth();
+
   const [formProveedor, setFormProveedor] = useState({
     id_usuario: "",
     rut_empresa: "",
@@ -74,11 +78,11 @@ const ProveedorFormDialog = ({
 
   const handleUsuarioCreado = async (usuarioTemp) => {
     try {
-      const nuevoUsuario = await createUsuario(usuarioTemp); // ✅ Guardar en backend
-      setUsuarios((prev) => [...prev, nuevoUsuario]);        // ✅ Agregar a la lista local
+      const nuevoUsuario = await createUsuario(usuarioTemp);
+      setUsuarios((prev) => [...prev, nuevoUsuario]);
       setFormProveedor((prev) => ({
         ...prev,
-        id_usuario: String(nuevoUsuario.id_usuario),          // ✅ Seleccionar automáticamente
+        id_usuario: String(nuevoUsuario.id_usuario),
       }));
       setOpenUsuarioDialog(false);
     } catch (error) {
@@ -91,66 +95,45 @@ const ProveedorFormDialog = ({
       <Dialog open={open} onClose={onClose}>
         <DialogTitle>{editing ? "Editar Proveedor" : "Crear Proveedor"}</DialogTitle>
         <DialogContent>
-          <FormControl fullWidth margin="dense" error={!!errors.id_usuario}>
-            <InputLabel>Usuario</InputLabel>
-            <Select
-              value={formProveedor.id_usuario}
-              onChange={(e) => setFormProveedor({ ...formProveedor, id_usuario: e.target.value })}
-            >
-              {usuarios.map((usuario) => (
-                <MenuItem key={usuario.id_usuario} value={usuario.id_usuario}>
-                  {usuario.nombre} ({usuario.email})
-                </MenuItem>
-              ))}
-            </Select>
-            <FormHelperText>{errors.id_usuario}</FormHelperText>
-          </FormControl>
+          {canEditField(role, "proveedor", "id_usuario") && (
+            <FormControl fullWidth margin="dense" error={!!errors.id_usuario}>
+              <InputLabel>Usuario</InputLabel>
+              <Select
+                value={formProveedor.id_usuario}
+                onChange={(e) => setFormProveedor({ ...formProveedor, id_usuario: e.target.value })}
+              >
+                {usuarios.map((usuario) => (
+                  <MenuItem key={usuario.id_usuario} value={usuario.id_usuario}>
+                    {usuario.nombre} ({usuario.email})
+                  </MenuItem>
+                ))}
+              </Select>
+              <FormHelperText>{errors.id_usuario}</FormHelperText>
+              <Button
+                onClick={() => setOpenUsuarioDialog(true)}
+                variant="outlined"
+                size="small"
+                style={{ marginTop: 6, marginBottom: 12 }}
+              >
+                Crear nuevo usuario
+              </Button>
+            </FormControl>
+          )}
 
-          <Button
-            onClick={() => setOpenUsuarioDialog(true)}
-            variant="outlined"
-            size="small"
-            style={{ marginTop: 6, marginBottom: 12 }}
-          >
-            Crear nuevo usuario
-          </Button>
-
-          <TextField
-            margin="dense"
-            label="RUT Empresa"
-            fullWidth
-            value={formProveedor.rut_empresa}
-            onChange={(e) => setFormProveedor({ ...formProveedor, rut_empresa: e.target.value })}
-            error={!!errors.rut_empresa}
-            helperText={errors.rut_empresa}
-          />
-          <TextField
-            margin="dense"
-            label="Dirección"
-            fullWidth
-            value={formProveedor.direccion}
-            onChange={(e) => setFormProveedor({ ...formProveedor, direccion: e.target.value })}
-            error={!!errors.direccion}
-            helperText={errors.direccion}
-          />
-          <TextField
-            margin="dense"
-            label="Teléfono"
-            fullWidth
-            value={formProveedor.telefono}
-            onChange={(e) => setFormProveedor({ ...formProveedor, telefono: e.target.value })}
-            error={!!errors.telefono}
-            helperText={errors.telefono}
-          />
-          <TextField
-            margin="dense"
-            label="Correo Electrónico"
-            fullWidth
-            value={formProveedor.email}
-            onChange={(e) => setFormProveedor({ ...formProveedor, email: e.target.value })}
-            error={!!errors.email}
-            helperText={errors.email}
-          />
+          {["rut_empresa", "direccion", "telefono", "email"].map((field) =>
+            canEditField(role, "proveedor", field) ? (
+              <TextField
+                key={field}
+                margin="dense"
+                label={field.replace("_", " ").replace(/\b\w/g, l => l.toUpperCase())}
+                fullWidth
+                value={formProveedor[field]}
+                onChange={(e) => setFormProveedor({ ...formProveedor, [field]: e.target.value })}
+                error={!!errors[field]}
+                helperText={errors[field]}
+              />
+            ) : null
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose}>Cancelar</Button>

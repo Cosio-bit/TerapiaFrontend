@@ -1,15 +1,22 @@
 import React, { useState, useEffect } from "react";
-import { Dialog, DialogActions, DialogContent, DialogTitle, TextField, Button, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import {
+  Dialog, DialogActions, DialogContent, DialogTitle,
+  TextField, Button, FormControl, InputLabel, Select, MenuItem
+} from "@mui/material";
+import { useAuth } from "../components/authcontext";
+import { can, canEditField } from "../can";
 
-const GastoFormDialog = ({ 
-  open, 
-  onClose, 
-  onSave, 
-  gasto, 
-  proveedores = [],  
+const GastoFormDialog = ({
+  open,
+  onClose,
+  onSave,
+  gasto,
+  proveedores = [],
   editing,
-  setSnackbar
+  setSnackbar,
 }) => {
+  const { role } = useAuth();
+
   const [formGasto, setFormGasto] = useState({
     proveedor: "",
     nombre: "",
@@ -22,10 +29,7 @@ const GastoFormDialog = ({
 
   useEffect(() => {
     if (gasto?.id_gasto && open) {
-      console.log("Opening dialog with gasto:", gasto);
-
       const proveedorId = gasto.proveedor?.id_proveedor || "";
-
       setFormGasto({
         proveedor: proveedorId,
         nombre: gasto.nombre || "",
@@ -44,20 +48,31 @@ const GastoFormDialog = ({
     }
   }, [gasto, open]);
 
+  const canEditProveedor = canEditField(role, "gasto", "proveedor");
+  const canEditNombre = canEditField(role, "gasto", "nombre");
+  const canEditDescripcion = canEditField(role, "gasto", "descripcion");
+  const canEditMonto = canEditField(role, "gasto", "monto");
+  const canEditFecha = canEditField(role, "gasto", "fecha");
+  const canSave = editing ? can(role, "edit", "gasto") : can(role, "create", "gasto");
+
   const handleSave = async () => {
+    if (!canSave) {
+      setSnackbar({ open: true, message: "No tienes permiso para esta acción.", severity: "error" });
+      return;
+    }
+
     if (!formGasto.proveedor || !formGasto.nombre || formGasto.monto === "" || !formGasto.fecha || !formGasto.descripcion) {
       setSnackbar({ open: true, message: "Complete todos los campos obligatorios.", severity: "error" });
       return;
     }
 
     const payload = {
-      proveedor: { id_proveedor: formGasto.proveedor }, 
+      proveedor: { id_proveedor: formGasto.proveedor },
       nombre: formGasto.nombre,
       descripcion: formGasto.descripcion,
       monto: Number(formGasto.monto),
       fecha: formGasto.fecha,
     };
-    console.log("Saving gasto:", payload);
 
     try {
       await onSave(payload);
@@ -69,21 +84,21 @@ const GastoFormDialog = ({
     }
   };
 
-  const isProveedorLoaded = proveedores.some(
-    (p) => p.id_proveedor === formGasto.proveedor
-  );
+  const isProveedorLoaded = proveedores.some((p) => p.id_proveedor === formGasto.proveedor);
 
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>{editing ? "Editar Gasto" : "Crear Gasto"}</DialogTitle>
       <DialogContent>
 
-        {/* Proveedor */}
-        <FormControl fullWidth margin="dense">
+        <FormControl fullWidth margin="dense" disabled={!canEditProveedor}>
           <InputLabel>Proveedor</InputLabel>
           <Select
             value={isProveedorLoaded ? formGasto.proveedor : ""}
-            onChange={(e) => setFormGasto({ ...formGasto, proveedor: e.target.value })}
+            onChange={(e) =>
+              canEditProveedor &&
+              setFormGasto({ ...formGasto, proveedor: e.target.value })
+            }
           >
             {proveedores.map((proveedor) => (
               <MenuItem key={proveedor.id_proveedor} value={proveedor.id_proveedor}>
@@ -93,21 +108,20 @@ const GastoFormDialog = ({
           </Select>
         </FormControl>
 
-        {/* Nombre */}
         <TextField
           margin="dense"
           label="Nombre"
           fullWidth
           value={formGasto.nombre}
-          onChange={(e) => setFormGasto({ ...formGasto, nombre: e.target.value })}
+          onChange={(e) => canEditNombre && setFormGasto({ ...formGasto, nombre: e.target.value })}
+          disabled={!canEditNombre}
         />
 
-        {/* Descripción - ahora dropdown */}
-        <FormControl fullWidth margin="dense">
+        <FormControl fullWidth margin="dense" disabled={!canEditDescripcion}>
           <InputLabel>Tipo de Gasto</InputLabel>
           <Select
             value={formGasto.descripcion}
-            onChange={(e) => setFormGasto({ ...formGasto, descripcion: e.target.value })}
+            onChange={(e) => canEditDescripcion && setFormGasto({ ...formGasto, descripcion: e.target.value })}
           >
             {descripcionOpciones.map((opcion) => (
               <MenuItem key={opcion} value={opcion}>
@@ -117,34 +131,34 @@ const GastoFormDialog = ({
           </Select>
         </FormControl>
 
-        {/* Monto */}
         <TextField
           margin="dense"
           label="Monto"
           type="number"
           fullWidth
           value={formGasto.monto}
-          onChange={(e) => setFormGasto({ 
-            ...formGasto, 
-            monto: e.target.value === "" ? "" : Number(e.target.value) 
-          })}
+          onChange={(e) =>
+            canEditMonto &&
+            setFormGasto({ ...formGasto, monto: e.target.value === "" ? "" : Number(e.target.value) })
+          }
+          disabled={!canEditMonto}
         />
 
-        {/* Fecha */}
         <TextField
           margin="dense"
           label="Fecha"
           type="date"
           fullWidth
           value={formGasto.fecha}
-          onChange={(e) => setFormGasto({ ...formGasto, fecha: e.target.value })}
+          onChange={(e) => canEditFecha && setFormGasto({ ...formGasto, fecha: e.target.value })}
           InputLabelProps={{ shrink: true }}
+          disabled={!canEditFecha}
         />
-
       </DialogContent>
+
       <DialogActions>
         <Button onClick={onClose}>Cancelar</Button>
-        <Button onClick={handleSave} variant="contained" color="primary">
+        <Button onClick={handleSave} variant="contained" color="primary" disabled={!canSave}>
           {editing ? "Guardar Cambios" : "Crear Gasto"}
         </Button>
       </DialogActions>

@@ -1,8 +1,12 @@
 import React from "react";
 import { Box, Button } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
+import { useAuth } from "../components/authcontext";
+import { can } from "../can";
 
 const ProveedoresTable = ({ proveedores, onEdit, onDelete }) => {
+  const { role } = useAuth();
+
   return (
     <Box mt={3}>
       <DataGrid
@@ -20,7 +24,6 @@ const ProveedoresTable = ({ proveedores, onEdit, onDelete }) => {
               return usuario ? `${usuario.nombre} (${usuario.email})` : "Sin usuario";
             },
           },
-          
           { field: "rut_empresa", headerName: "RUT Empresa", flex: 1 },
           { field: "direccion", headerName: "Dirección", flex: 1 },
           { field: "telefono", headerName: "Teléfono", flex: 1 },
@@ -32,12 +35,16 @@ const ProveedoresTable = ({ proveedores, onEdit, onDelete }) => {
             flex: 1,
             renderCell: (params) => (
               <Box display="flex" gap={1}>
-                <Button size="small" onClick={() => onEdit(params.row)}>
-                  Editar
-                </Button>
-                <Button size="small" color="error" onClick={() => onDelete(params.row.id)}>
-                  Eliminar
-                </Button>
+                {can(role, "edit", "proveedor") && (
+                  <Button size="small" onClick={() => onEdit(params.row)}>
+                    Editar
+                  </Button>
+                )}
+                {can(role, "delete", "proveedor") && (
+                  <Button size="small" color="error" onClick={() => onDelete(params.row.id)}>
+                    Eliminar
+                  </Button>
+                )}
               </Box>
             ),
           },

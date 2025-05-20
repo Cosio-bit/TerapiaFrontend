@@ -13,10 +13,14 @@ import {
 } from "@mui/material";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
+import { useAuth } from "../components/authcontext";
+import { canEditField } from "../can"; // ✅ para control por campo
 
 dayjs.extend(customParseFormat);
 
 const SesionFormDialog = ({ open, onClose, onSave, sesion, profesionales, editing }) => {
+  const { role } = useAuth();
+
   const [formSesion, setFormSesion] = useState({
     id_sesion: null,
     fecha_hora: "",
@@ -28,15 +32,12 @@ const SesionFormDialog = ({ open, onClose, onSave, sesion, profesionales, editin
   useEffect(() => {
     if (open) {
       if (editing && sesion) {
-        console.log("🔄 Loading session:", sesion);
-
         const parsedDate = sesion.fecha_hora
           ? dayjs(sesion.fecha_hora, "DD/MM/YYYY HH:mm").isValid()
             ? dayjs(sesion.fecha_hora, "DD/MM/YYYY HH:mm").format("YYYY-MM-DDTHH:mm")
             : ""
           : "";
 
-        // Convert professional name back to ID
         const profesionalData =
           typeof sesion.profesional === "string"
             ? profesionales.find((p) => p.usuario.nombre === sesion.profesional)
@@ -52,7 +53,6 @@ const SesionFormDialog = ({ open, onClose, onSave, sesion, profesionales, editin
             : { id_profesional: "" },
         });
       } else {
-        console.log("🆕 Resetting form for new session");
         setFormSesion({
           id_sesion: null,
           fecha_hora: "",
@@ -62,7 +62,7 @@ const SesionFormDialog = ({ open, onClose, onSave, sesion, profesionales, editin
         });
       }
     }
-  }, [open, sesion, editing, profesionales]); // ✅ Now triggers when `profesionales` list updates
+  }, [open, sesion, editing, profesionales]);
 
   const handleSave = () => {
     const formattedSesion = {
@@ -73,7 +73,6 @@ const SesionFormDialog = ({ open, onClose, onSave, sesion, profesionales, editin
       profesional: { id_profesional: formSesion.profesional.id_profesional },
     };
 
-    console.log("🚀 Saving session:", JSON.stringify(formattedSesion, null, 2));
     onSave(formattedSesion);
   };
 
@@ -81,48 +80,58 @@ const SesionFormDialog = ({ open, onClose, onSave, sesion, profesionales, editin
     <Dialog open={open} onClose={onClose} key={formSesion.id_sesion || "new"}>
       <DialogTitle>{editing ? "Editar Sesión" : "Crear Sesión"}</DialogTitle>
       <DialogContent>
-        <TextField
-          margin="dense"
-          label="Fecha y Hora"
-          type="datetime-local"
-          fullWidth
-          InputLabelProps={{ shrink: true }}
-          value={formSesion.fecha_hora}
-          onChange={(e) => setFormSesion({ ...formSesion, fecha_hora: e.target.value })}
-        />
-        <TextField
-          margin="dense"
-          label="Precio"
-          type="number"
-          fullWidth
-          value={formSesion.precio}
-          onChange={(e) => setFormSesion({ ...formSesion, precio: parseFloat(e.target.value) || "" })}
-        />
-        <TextField
-          margin="dense"
-          label="Estado"
-          fullWidth
-          value={formSesion.estado}
-          onChange={(e) => setFormSesion({ ...formSesion, estado: e.target.value })}
-        />
-        <FormControl fullWidth margin="dense">
-          <InputLabel>Profesional</InputLabel>
-          <Select
-            value={formSesion.profesional.id_profesional || ""}
+        {canEditField(role, "sesion", "fecha_hora") && (
+          <TextField
+            margin="dense"
+            label="Fecha y Hora"
+            type="datetime-local"
+            fullWidth
+            InputLabelProps={{ shrink: true }}
+            value={formSesion.fecha_hora}
+            onChange={(e) => setFormSesion({ ...formSesion, fecha_hora: e.target.value })}
+          />
+        )}
+        {canEditField(role, "sesion", "precio") && (
+          <TextField
+            margin="dense"
+            label="Precio"
+            type="number"
+            fullWidth
+            value={formSesion.precio}
             onChange={(e) =>
-              setFormSesion({
-                ...formSesion,
-                profesional: { id_profesional: e.target.value },
-              })
+              setFormSesion({ ...formSesion, precio: parseFloat(e.target.value) || "" })
             }
-          >
-            {profesionales.map((profesional) => (
-              <MenuItem key={profesional.id_profesional} value={profesional.id_profesional}>
-                {profesional.usuario.nombre}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+          />
+        )}
+        {canEditField(role, "sesion", "estado") && (
+          <TextField
+            margin="dense"
+            label="Estado"
+            fullWidth
+            value={formSesion.estado}
+            onChange={(e) => setFormSesion({ ...formSesion, estado: e.target.value })}
+          />
+        )}
+        {canEditField(role, "sesion", "profesional") && (
+          <FormControl fullWidth margin="dense">
+            <InputLabel>Profesional</InputLabel>
+            <Select
+              value={formSesion.profesional.id_profesional || ""}
+              onChange={(e) =>
+                setFormSesion({
+                  ...formSesion,
+                  profesional: { id_profesional: e.target.value },
+                })
+              }
+            >
+              {profesionales.map((profesional) => (
+                <MenuItem key={profesional.id_profesional} value={profesional.id_profesional}>
+                  {profesional.usuario.nombre}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        )}
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancelar</Button>

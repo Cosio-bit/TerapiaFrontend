@@ -6,13 +6,16 @@ import {
   updateProveedor,
   deleteProveedor,
 } from "../api/proveedorApi";
-import { getAllUsuarios } from "../api/usuarioApi"; // Importa la función para obtener usuarios
+import { getAllUsuarios } from "../api/usuarioApi";
 import ProveedoresTable from "../components/ProveedoresTable";
 import ProveedorFormDialog from "../components/ProveedorFormDialog";
+import { useAuth } from "../components/authcontext";
+import { can } from "../can";
 
 const Proveedores = () => {
+  const { role } = useAuth(); // ✅ Obtener el rol actual
   const [proveedores, setProveedores] = useState([]);
-  const [usuarios, setUsuarios] = useState([]); // Estado para los usuarios
+  const [usuarios, setUsuarios] = useState([]);
   const [currentProveedor, setCurrentProveedor] = useState(null);
   const [editing, setEditing] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
@@ -42,7 +45,7 @@ const Proveedores = () => {
     };
 
     fetchProveedores();
-    fetchUsuarios(); // Llama a la función para obtener usuarios
+    fetchUsuarios();
   }, []);
 
   const handleSaveProveedor = async (proveedor) => {
@@ -92,24 +95,25 @@ const Proveedores = () => {
     }
   };
 
-  const handleCloseSnackbar = () => setSnackbar({ open: false, message: "", severity: "success" });
-
   return (
     <Box p={4}>
       <Typography variant="h4" gutterBottom>
         Gestión de Proveedores
       </Typography>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => {
-          setEditing(false);
-          setCurrentProveedor(null);
-          setOpenDialog(true);
-        }}
-      >
-        Crear Proveedor
-      </Button>
+
+      {can(role, "create", "proveedor") && ( // ✅ Validación de permiso
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            setEditing(false);
+            setCurrentProveedor(null);
+            setOpenDialog(true);
+          }}
+        >
+          Crear Proveedor
+        </Button>
+      )}
 
       <ProveedoresTable
         proveedores={proveedores}
@@ -117,23 +121,22 @@ const Proveedores = () => {
         onDelete={handleDeleteProveedor}
       />
 
-<ProveedorFormDialog
-  open={openDialog}
-  onClose={() => setOpenDialog(false)}
-  onSave={handleSaveProveedor}
-  proveedor={currentProveedor}
-  usuarios={usuarios}
-  setUsuarios={setUsuarios} // ✅ necesario
-  editing={editing}
-/>
-
+      <ProveedorFormDialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        onSave={handleSaveProveedor}
+        proveedor={currentProveedor}
+        usuarios={usuarios}
+        setUsuarios={setUsuarios}
+        editing={editing}
+      />
 
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
+        onClose={() => setSnackbar({ open: false, message: "", severity: "success" })}
       >
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity}>
+        <Alert onClose={() => setSnackbar({ open: false, message: "", severity: "success" })} severity={snackbar.severity}>
           {snackbar.message}
         </Alert>
       </Snackbar>

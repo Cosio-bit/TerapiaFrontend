@@ -4,8 +4,11 @@ import { getAllSesiones, createSesion, updateSesion, deleteSesion } from "../api
 import { getAllProfesionales } from "../api/profesionalApi";
 import SesionesTable from "../components/SesionesTable";
 import SesionFormDialog from "../components/SesionFormDialog";
+import { useAuth } from "../components/authcontext";
+import { can } from "../can"; // ✅ Control de permisos
 
 const Sesiones = () => {
+  const { role } = useAuth();
   const [sesiones, setSesiones] = useState([]);
   const [profesionales, setProfesionales] = useState([]);
   const [currentSesion, setCurrentSesion] = useState(null);
@@ -20,17 +23,14 @@ const Sesiones = () => {
           getAllSesiones(),
           getAllProfesionales(),
         ]);
-  
-        setSesiones(Array.isArray(sesionesData) ? sesionesData : []); // Ensure it's an array
+        setSesiones(Array.isArray(sesionesData) ? sesionesData : []);
         setProfesionales(Array.isArray(profesionalesData) ? profesionalesData : []);
       } catch {
         setSnackbar({ open: true, message: "Error al cargar los datos.", severity: "error" });
       }
     };
-  
     fetchData();
   }, []);
-  
 
   const handleSaveSesion = async (sesion) => {
     try {
@@ -61,12 +61,43 @@ const Sesiones = () => {
   return (
     <Box p={4}>
       <Typography variant="h4" gutterBottom>Gestión de Sesiones</Typography>
-      {/*<Button variant="contained" color="primary" onClick={() => { setEditing(false); setCurrentSesion(null); setOpenDialog(true); }}>
-        Crear Sesión
-      </Button>*/}
+
+      {can(role, "create", "sesion") && (
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            setEditing(false);
+            setCurrentSesion(null);
+            setOpenDialog(true);
+          }}
+        >
+          Crear Sesión
+        </Button>
+      )}
+
       <SesionesTable sesiones={sesiones} onEdit={handleEditSesion} onDelete={handleDeleteSesion} />
-      <SesionFormDialog open={openDialog} onClose={() => setOpenDialog(false)} onSave={handleSaveSesion} sesion={currentSesion} profesionales={profesionales} editing={editing} />
+
+      <SesionFormDialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        onSave={handleSaveSesion}
+        sesion={currentSesion}
+        profesionales={profesionales}
+        editing={editing}
+      />
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar({ open: false, message: "", severity: "success" })}
+      >
+        <Alert onClose={() => setSnackbar({ open: false, message: "", severity: "success" })} severity={snackbar.severity}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
+
 export default Sesiones;

@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Box, Button, Typography, TextField, MenuItem, Autocomplete } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import dayjs from "dayjs";
-import { fetchSesionesIndividuales, fetchTotalSesionesIndividuales } from "../api/sesionEstadisticasApi";
-import { getAllProfesionales } from "../api/profesionalApi";
-import { formatnumber } from '../utils/formatnumber'; // ✅ Import añadido
+import { useAuth } from "../components/authcontext";
+import { can } from "../can"; // ✅ Permisos
 
 const estadoOpciones = [
   "Pagado y Realizado",
@@ -13,53 +12,8 @@ const estadoOpciones = [
   "No Pagado y No Realizado"
 ];
 
-const SesionesTable = ({ onEdit, onDelete }) => {
-  const [sesiones, setSesiones] = useState([]);
-  const [totalAmount, setTotalAmount] = useState(0);
-  const [estado, setEstado] = useState("");
-  const [startDate, setStartDate] = useState(dayjs().startOf('month').format("YYYY-MM-DDTHH:mm"));
-  const [endDate, setEndDate] = useState(dayjs().endOf('month').format("YYYY-MM-DDTHH:mm"));
-  const [profesional, setProfesional] = useState(null);
-  const [profesionales, setProfesionales] = useState([]);
-
-  const loadSesiones = async () => {
-    try {
-      const data = await fetchSesionesIndividuales(
-        startDate,
-        endDate,
-        estado || null,
-        profesional?.id_profesional || null
-      );
-      setSesiones(data);
-
-      const total = await fetchTotalSesionesIndividuales(
-        startDate,
-        endDate,
-        estado || null,
-        profesional?.id_profesional || null
-      );
-      setTotalAmount(total);
-    } catch (error) {
-      console.error("Error fetching sesiones individuales:", error);
-    }
-  };
-
-  const loadProfesionales = async () => {
-    try {
-      const data = await getAllProfesionales();
-      setProfesionales(data);
-    } catch (error) {
-      console.error("Error fetching profesionales:", error);
-    }
-  };
-
-  useEffect(() => {
-    loadProfesionales();
-  }, []);
-
-  useEffect(() => {
-    loadSesiones();
-  }, [startDate, endDate, estado, profesional]);
+const SesionesTable = ({ sesiones = [], onEdit, onDelete, totalAmount, startDate, endDate, setStartDate, setEndDate, estado, setEstado, profesional, setProfesional, profesionales, loadSesiones }) => {
+  const { role } = useAuth();
 
   const rows = Array.isArray(sesiones)
     ? sesiones.map((sesion) => ({
@@ -67,25 +21,13 @@ const SesionesTable = ({ onEdit, onDelete }) => {
         id: sesion.id_sesion,
         fecha_hora: dayjs(sesion.fecha_hora).format("DD/MM/YYYY HH:mm"),
         profesional: sesion.profesional?.usuario?.nombre || "Sin profesional",
-        precioFormateado: formatnumber(sesion.precio || 0),
+        precioFormateado: new Intl.NumberFormat("es-CL").format(sesion.precio || 0),
       }))
     : [];
 
   return (
     <Box mt={3}>
-      {/* 🔧 Filtros arriba de la tabla */}
-      <Box
-        display="flex"
-        flexWrap="wrap"
-        gap={2}
-        mb={2}
-        alignItems="flex-start"
-        sx={{
-          overflow: "visible",
-          position: "relative",
-          zIndex: 1,
-        }}
-      >
+      <Box display="flex" flexWrap="wrap" gap={2} mb={2} alignItems="flex-start">
         <TextField
           label="Fecha inicio"
           type="datetime-local"
@@ -108,16 +50,6 @@ const SesionesTable = ({ onEdit, onDelete }) => {
           value={estado}
           onChange={(e) => setEstado(e.target.value)}
           sx={{ minWidth: 220 }}
-          SelectProps={{
-            MenuProps: {
-              PaperProps: {
-                style: {
-                  maxHeight: 300,
-                  overflowY: "auto",
-                },
-              },
-            },
-          }}
         >
           <MenuItem value="">Todos</MenuItem>
           {estadoOpciones.map((opcion) => (
@@ -136,21 +68,11 @@ const SesionesTable = ({ onEdit, onDelete }) => {
           onChange={(event, newValue) => setProfesional(newValue)}
           isOptionEqualToValue={(option, value) => option.id_profesional === value.id_profesional}
           clearOnEscape
-          PopperProps={{
-            modifiers: [
-              {
-                name: "preventOverflow",
-                options: {
-                  boundary: "viewport",
-                },
-              },
-            ],
-          }}
         />
 
         <Box display="flex" alignItems="center" gap={2} sx={{ minWidth: 250 }}>
           <Typography variant="h6" sx={{ whiteSpace: "nowrap" }}>
-            Total: ${formatnumber(totalAmount)}
+            Total: ${new Intl.NumberFormat("es-CL").format(totalAmount)}
           </Typography>
           <Button variant="contained" onClick={loadSesiones}>
             Actualizar
@@ -158,7 +80,6 @@ const SesionesTable = ({ onEdit, onDelete }) => {
         </Box>
       </Box>
 
-      {/* 🔧 Tabla */}
       <DataGrid
         rows={rows}
         columns={[
@@ -175,14 +96,19 @@ const SesionesTable = ({ onEdit, onDelete }) => {
             field: "actions",
             headerName: "Acciones",
             flex: 1,
+            sortable: false,
             renderCell: (params) => (
               <Box display="flex" gap={1}>
-                <Button size="small" onClick={() => onEdit(params.row)}>
-                  Editar
-                </Button>
-                <Button size="small" color="error" onClick={() => onDelete(params.row.id)}>
-                  Eliminar
-                </Button>
+                {can(role, "edit", "sesion") && (
+                  <Button size="small" onClick={() => onEdit(params.row)}>
+                    Editar
+                  </Button>
+                )}
+                {can(role, "delete", "sesion") && (
+                  <Button size="small" color="error" onClick={() => onDelete(params.row.id)}>
+                    Eliminar
+                  </Button>
+                )}
               </Box>
             ),
           },
