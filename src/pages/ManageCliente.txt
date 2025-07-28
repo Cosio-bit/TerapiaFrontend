@@ -25,7 +25,6 @@ const ManageCliente = ({ clientes = [], onEdit, onDelete }) => {
   const [modo, setModo] = useState(isMobile ? "tarjeta" : "tabla");
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
-  const [loading, setLoading] = useState(false); // New loading state
 
   // Build rows that include the *original* client object
   const rows = clientes.map((c) => ({
@@ -34,24 +33,12 @@ const ManageCliente = ({ clientes = [], onEdit, onDelete }) => {
     email: c.usuario?.email || "—",
     fecha_registro: c.fecha_registro || "—",
     saldo: typeof c.saldo === "number" ? `$${c.saldo}` : "—",
-    __clientObj: c, // keep original here
+    __clientObj: c,               // keep original here
   }));
 
   const handleManageClick = (clientObj) => {
     setSelectedClient(clientObj);
     setOpenDialog(true);
-  };
-
-  const handleDelete = async (clientId) => {
-    setLoading(true);
-    try {
-      await onDelete(clientId);
-    } catch (error) {
-      console.error("Error deleting client:", error);
-      // Optionally show an error message to the user
-    } finally {
-      setLoading(false);
-    }
   };
 
   const columns = [
@@ -77,7 +64,6 @@ const ManageCliente = ({ clientes = [], onEdit, onDelete }) => {
               <Button
                 size="small"
                 onClick={() => onEdit(client)}
-                disabled={loading} // Disable while loading
               >
                 Editar
               </Button>
@@ -86,8 +72,7 @@ const ManageCliente = ({ clientes = [], onEdit, onDelete }) => {
               <Button
                 size="small"
                 color="error"
-                onClick={() => handleDelete(client.id_cliente)}
-                disabled={loading} // Disable while loading
+                onClick={() => onDelete(client.id_cliente)}
               >
                 Eliminar
               </Button>
@@ -96,7 +81,6 @@ const ManageCliente = ({ clientes = [], onEdit, onDelete }) => {
               size="small"
               color="primary"
               onClick={() => handleManageClick(client)}
-              disabled={loading} // Disable while loading
             >
               Gestionar
             </Button>
@@ -154,7 +138,7 @@ const ManageCliente = ({ clientes = [], onEdit, onDelete }) => {
               </Typography>
               <Box mt={1} display="flex" gap={1}>
                 {can(role, "edit", "cliente") && (
-                  <Button size="small" onClick={() => onEdit(r.__clientObj)} disabled={loading}>
+                  <Button size="small" onClick={() => onEdit(r.__clientObj)}>
                     Editar
                   </Button>
                 )}
@@ -162,7 +146,7 @@ const ManageCliente = ({ clientes = [], onEdit, onDelete }) => {
                   <Button
                     size="small"
                     color="error"
-                    onClick={() => handleDelete(r.__clientObj.id_cliente)} disabled={loading}
+                    onClick={() => onDelete(r.__clientObj.id_cliente)}
                   >
                     Eliminar
                   </Button>
@@ -170,7 +154,7 @@ const ManageCliente = ({ clientes = [], onEdit, onDelete }) => {
                 <Button
                   size="small"
                   color="primary"
-                  onClick={() => handleManageClick(r.__clientObj)} disabled={loading}
+                  onClick={() => handleManageClick(r.__clientObj)}
                 >
                   Gestionar
                 </Button>

@@ -27,10 +27,12 @@ const Cliente2FormDialog = ({
   clientList,
   selectedClient: propClient,
 }) => {
+  // Local state for sub‑dialogs
   const [openCompraDialog, setOpenCompraDialog] = useState(false);
   const [openArriendoDialog, setOpenArriendoDialog] = useState(false);
   const [openSesionDialog, setOpenSesionDialog] = useState(false);
 
+  // Client data hook
   const {
     selectedClient: clientData,
     setSelectedClient,
@@ -42,6 +44,7 @@ const Cliente2FormDialog = ({
     fetchClientData,
   } = useClientData();
 
+  // Resource hook
   const {
     productos,
     salas,
@@ -51,12 +54,13 @@ const Cliente2FormDialog = ({
     errorResources,
   } = useResourceFetch(!!open);
 
+  // Sync external prop to hook state
   useEffect(() => {
     if (propClient?.id_cliente !== clientData?.id_cliente) {
       setSelectedClient(propClient);
       fetchClientData(propClient?.id_cliente);
     }
-  }, [propClient, clientData]);
+  }, [propClient]);
 
   const isBusy = loadingClient || loadingResources;
   const errorMessage = errorClient || errorResources;
@@ -65,6 +69,7 @@ const Cliente2FormDialog = ({
     <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="md">
       <DialogTitle>Gestión del Cliente</DialogTitle>
       <DialogContent dividers>
+        {/* Client selector */}
         <FormControl fullWidth margin="normal" disabled={isBusy}>
           <InputLabel id="client-select-label">Cliente</InputLabel>
           <Select
@@ -86,6 +91,7 @@ const Cliente2FormDialog = ({
           </Select>
         </FormControl>
 
+        {/* Global spinner and errors */}
         {isBusy && (
           <Box textAlign="center" my={2}>
             <CircularProgress />
@@ -93,6 +99,7 @@ const Cliente2FormDialog = ({
         )}
         {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
 
+        {/* Client history & actions */}
         {!isBusy && clientData && (
           <>
             <Typography variant="h6" gutterBottom>
@@ -140,21 +147,21 @@ const Cliente2FormDialog = ({
             <Box mt={2} display="flex" gap={1}>
               <Button
                 variant="contained"
-                disabled={!clientData || isBusy}
+                disabled={!clientData}
                 onClick={() => setOpenCompraDialog(true)}
               >
                 Crear Compra
               </Button>
               <Button
                 variant="contained"
-                disabled={!clientData || isBusy}
+                disabled={!clientData}
                 onClick={() => setOpenSesionDialog(true)}
               >
                 Nueva Sesión
               </Button>
               <Button
                 variant="contained"
-                disabled={!clientData || isBusy}
+                disabled={!clientData}
                 onClick={() => setOpenArriendoDialog(true)}
               >
                 Nuevo Arriendo
@@ -170,6 +177,7 @@ const Cliente2FormDialog = ({
         </Button>
       </DialogActions>
 
+      {/* Sub‑dialogs: onSave only refetch if a real save occurred */}
       <CompraFormDialog
         open={openCompraDialog}
         onClose={() => setOpenCompraDialog(false)}
@@ -207,6 +215,7 @@ const Cliente2FormDialog = ({
   );
 };
 
+/** Helper list section with stable keys and graceful empty state */
 const SectionList = ({ title, items, renderItem, emptyMessage }) => (
   <Box mb={2}>
     <Typography variant="subtitle1">{title}</Typography>
