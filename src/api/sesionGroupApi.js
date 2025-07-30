@@ -128,4 +128,20 @@ export const fetchSesionesByEstadoAndFecha = async (startDate, endDate, estado) 
     console.error("Error fetching sesiones by estado and fecha:", error);
     throw error;
   }
+  
 };
+
+/**
+ * Fetch session groups by client ID
+ * @param {number} idCliente - Client ID
+ * @returns {Promise<Array>} List of session groups for the client
+ */ 
+export const fetchSesionGroupsByCliente = async (idCliente) => {
+  try {
+    const response = await axiosInstance.get(`/sesion-groups/cliente/${idCliente}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching session groups by client:", error);
+    throw error;
+  }
+}

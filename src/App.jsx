@@ -4,6 +4,7 @@ import MainLayout from './MainLayout'
 import { AuthProvider } from './components/authcontext'
 import ProtectedRoute from './components/ProtectedRoute'
 import LoginPage from './pages/LoginPage'
+import { QueryProvider } from './providers/QueryProvider';
 
 // Páginas
 import Usuarios from './pages/Usuarios'
@@ -26,6 +27,7 @@ import SesionGroups from './pages/SesionGroups'
 import ManageCliente from './pages/ManageCliente'
 
 const App = () => (
+  <QueryProvider>
   <BrowserRouter>
     <AuthProvider>
       <Routes>
@@ -53,6 +55,7 @@ const App = () => (
       </Routes>
     </AuthProvider>
   </BrowserRouter>
+  </QueryProvider>
 )
 
 export default App

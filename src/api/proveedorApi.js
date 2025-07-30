@@ -15,6 +15,22 @@ export const getAllProveedores = async () => {
 };
 
 /**
+ * Fetch all suppliers
+ * @returns {Promise<Array>} List of suppliers
+ */
+export const fetchProveedores = async () => {
+  try {
+    const response = await axiosInstance.get("/proveedores");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching suppliers:", error);
+    throw error;
+  }
+};
+
+
+
+/**
  * Fetch a supplier by ID
  * @param {number} id - Supplier ID
  * @returns {Promise<Object>} Supplier details

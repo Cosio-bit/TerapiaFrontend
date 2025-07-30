@@ -90,3 +90,14 @@ export const bulkCreateCompras = async (compras) => {
     throw error;
   }
 };
+
+export const fetchComprasByCliente = async (idCliente) => {
+  try {
+    const response = await axiosInstance.get(`/compras/cliente/${idCliente}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching compras por cliente:", error);
+    throw error;
+  }
+};
+

@@ -1,198 +1,323 @@
-import React, { useState } from "react";
-import {
-  Box,
-  Button,
-  ButtonGroup,
-  Typography,
+// src/pages/Clientes.jsx
+import React, { useState, useEffect } from "react";
+import { 
+  Box, 
+  Button, 
+  Snackbar, 
+  Alert, 
+  Typography, 
   Paper,
-  Stack,
-  useMediaQuery,
-  useTheme,
+  CircularProgress,
+  Container
 } from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
+import { Add as AddIcon, Man } from "@mui/icons-material";
+
+// API imports
+import { getAllClientes, createCliente, updateCliente, deleteCliente } from "../api/clienteApi";
+import { getAllUsuarios } from "../api/usuarioApi";
+import { fetchProveedores } from "../api/proveedorApi";
+
+// Component imports
+import ClientesTable from "../components/ClientesTable2";
+import ClienteFormDialog from "../components/ClienteFormDialog";
 import { useAuth } from "../components/authcontext";
 import { can } from "../utils/can";
-import Cliente2FormDialog from "../components/Cliente2FormDialog";
 
-/**
- * Renders either a table or card list of clients, each with Edit/Delete/Gestionar.
- * “Gestionar” opens the full client management dialog (Cliente2FormDialog).
- */
-const ManageCliente = ({ clientes = [], onEdit, onDelete }) => {
+const ManageCliente = () => {
   const { role } = useAuth();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const [modo, setModo] = useState(isMobile ? "tarjeta" : "tabla");
+
+  // Estados principales
+  const [clientes, setClientes] = useState([]);
+  const [usuarios, setUsuarios] = useState([]);
+  const [proveedores, setProveedores] = useState([]);
+  const [currentCliente, setCurrentCliente] = useState(null);
+  const [editing, setEditing] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
-  const [selectedClient, setSelectedClient] = useState(null);
-  const [loading, setLoading] = useState(false); // New loading state
+  const [loading, setLoading] = useState(true);
+  const [snackbar, setSnackbar] = useState({ 
+    open: false, 
+    message: "", 
+    severity: "success" 
+  });
 
-  // Build rows that include the *original* client object
-  const rows = clientes.map((c) => ({
-    id: c.id_cliente,
-    usuario: c.usuario?.nombre || "—",
-    email: c.usuario?.email || "—",
-    fecha_registro: c.fecha_registro || "—",
-    saldo: typeof c.saldo === "number" ? `$${c.saldo}` : "—",
-    __clientObj: c, // keep original here
-  }));
+  // Cargar datos iniciales
+  useEffect(() => {
+    const loadInitialData = async () => {
+      setLoading(true);
+      try {
+        await Promise.all([
+          fetchClientes(),
+          fetchUsuarios(),
+          fetchProveedores()
+        ]);
+      } catch (error) {
+        console.error("Error loading initial data:", error);
+        setSnackbar({ 
+          open: true, 
+          message: "Error al cargar los datos iniciales.", 
+          severity: "error" 
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleManageClick = (clientObj) => {
-    setSelectedClient(clientObj);
-    setOpenDialog(true);
-  };
+    loadInitialData();
+  }, []);
 
-  const handleDelete = async (clientId) => {
-    setLoading(true);
+  // Función para cargar clientes
+  const fetchClientes = async () => {
     try {
-      await onDelete(clientId);
+      const clientesData = await getAllClientes();
+      setClientes(Array.isArray(clientesData) ? clientesData : []);
     } catch (error) {
-      console.error("Error deleting client:", error);
-      // Optionally show an error message to the user
-    } finally {
-      setLoading(false);
+      console.error("Error fetching clientes:", error);
+      setSnackbar({ 
+        open: true, 
+        message: "Error al cargar los clientes.", 
+        severity: "error" 
+      });
     }
   };
 
-  const columns = [
-    {
-      field: "usuario",
-      headerName: "Usuario",
-      flex: 1,
-      renderCell: (params) =>
-        `${params.row.usuario} (${params.row.email})`,
-    },
-    { field: "fecha_registro", headerName: "Fecha Registro", flex: 1 },
-    { field: "saldo", headerName: "Saldo", flex: 1 },
-    {
-      field: "actions",
-      headerName: "Acciones",
-      sortable: false,
-      flex: 1,
-      renderCell: (params) => {
-        const client = params.row.__clientObj;
-        return (
-          <Box display="flex" gap={1}>
-            {can(role, "edit", "cliente") && (
-              <Button
-                size="small"
-                onClick={() => onEdit(client)}
-                disabled={loading} // Disable while loading
-              >
-                Editar
-              </Button>
-            )}
-            {can(role, "delete", "cliente") && (
-              <Button
-                size="small"
-                color="error"
-                onClick={() => handleDelete(client.id_cliente)}
-                disabled={loading} // Disable while loading
-              >
-                Eliminar
-              </Button>
-            )}
-            <Button
-              size="small"
-              color="primary"
-              onClick={() => handleManageClick(client)}
-              disabled={loading} // Disable while loading
-            >
-              Gestionar
-            </Button>
-          </Box>
-        );
-      },
-    },
-  ];
+  // Función para cargar usuarios
+  const fetchUsuarios = async () => {
+    try {
+      const usuariosData = await getAllUsuarios();
+      setUsuarios(Array.isArray(usuariosData) ? usuariosData : []);
+    } catch (error) {
+      console.error("Error fetching usuarios:", error);
+      setSnackbar({ 
+        open: true, 
+        message: "Error al cargar los usuarios.", 
+        severity: "error" 
+      });
+    }
+  };
+
+  // Función para cargar proveedores
+  const fetchProveedores = async () => {
+    try {
+      const proveedoresData = await fetchProveedores();
+      setProveedores(Array.isArray(proveedoresData) ? proveedoresData : []);
+    } catch (error) {
+      console.error("Error fetching proveedores:", error);
+      // No mostramos error para proveedores ya que es opcional
+    }
+  };
+
+  // Manejar guardado de cliente
+  const handleSaveCliente = async (cliente) => {
+    // Verificar permisos
+    if (editing && !can(role, "edit", "cliente")) {
+      setSnackbar({ 
+        open: true, 
+        message: "No tiene permiso para editar clientes.", 
+        severity: "error" 
+      });
+      return;
+    }
+
+    if (!editing && !can(role, "create", "cliente")) {
+      setSnackbar({ 
+        open: true, 
+        message: "No tiene permiso para crear clientes.", 
+        severity: "error" 
+      });
+      return;
+    }
+
+    try {
+      if (editing) {
+        await updateCliente(currentCliente.id_cliente, cliente);
+      } else {
+        await createCliente(cliente);
+      }
+
+      await fetchClientes();
+      setOpenDialog(false);
+      setSnackbar({
+        open: true,
+        message: editing 
+          ? "Cliente actualizado con éxito." 
+          : "Cliente creado con éxito.",
+        severity: "success",
+      });
+    } catch (error) {
+      console.error("Error saving cliente:", error);
+      setSnackbar({ 
+        open: true, 
+        message: "Error al guardar el cliente.", 
+        severity: "error" 
+      });
+    }
+  };
+
+  // Manejar edición de cliente
+  const handleEditCliente = (cliente) => {
+    if (!can(role, "edit", "cliente")) {
+      setSnackbar({ 
+        open: true, 
+        message: "No tiene permiso para editar clientes.", 
+        severity: "error" 
+      });
+      return;
+    }
+
+    setEditing(true);
+    setCurrentCliente(cliente);
+    setOpenDialog(true);
+  };
+
+  // Manejar eliminación de cliente
+  const handleDeleteCliente = async (id) => {
+    if (!can(role, "delete", "cliente")) {
+      setSnackbar({ 
+        open: true, 
+        message: "No tiene permiso para eliminar clientes.", 
+        severity: "error" 
+      });
+      return;
+    }
+
+    if (!window.confirm("¿Está seguro de que desea eliminar este cliente?")) {
+      return;
+    }
+
+    try {
+      await deleteCliente(id);
+      await fetchClientes();
+      setSnackbar({ 
+        open: true, 
+        message: "Cliente eliminado con éxito.", 
+        severity: "success" 
+      });
+    } catch (error) {
+      console.error("Error deleting cliente:", error);
+      setSnackbar({ 
+        open: true, 
+        message: "Error al eliminar el cliente.", 
+        severity: "error" 
+      });
+    }
+  };
+
+  // Manejar apertura del diálogo para crear cliente
+  const handleCreateCliente = () => {
+    if (!can(role, "create", "cliente")) {
+      setSnackbar({ 
+        open: true, 
+        message: "No tiene permiso para crear clientes.", 
+        severity: "error" 
+      });
+      return;
+    }
+
+    setEditing(false);
+    setCurrentCliente(null);
+    setOpenDialog(true);
+  };
+
+  // Manejar cierre del snackbar
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  if (loading) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+          <CircularProgress size={40} />
+        </Box>
+      </Container>
+    );
+  }
 
   return (
-    <Box mt={3}>
-      {/* Mode toggle */}
-      <Box mb={2}>
-        <ButtonGroup variant="outlined" size="small">
-          <Button onClick={() => setModo("tabla")} disabled={modo === "tabla"}>
-            Tabla
-          </Button>
-          <Button onClick={() => setModo("tarjeta")} disabled={modo === "tarjeta"}>
-            Tarjetas
-          </Button>
-        </ButtonGroup>
-      </Box>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Paper sx={{ p: 3 }}>
+        {/* Header */}
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+          <Typography variant="h4" component="h1" fontWeight="bold">
+            Gestión de Clientes
+          </Typography>
 
-      {modo === "tabla" ? (
-        <Box sx={{ width: "100%", overflowX: "auto" }}>
-          <Box sx={{ minWidth: 600 }}>
-            <DataGrid
-              rows={rows}
-              columns={columns}
-              pageSize={5}
-              rowsPerPageOptions={[5]}
-              autoHeight
-              disableSelectionOnClick
-              localeText={{
-                noRowsLabel: "No hay clientes",
-              }}
-            />
-          </Box>
-        </Box>
-      ) : (
-        <Stack spacing={2}>
-          {rows.map((r) => (
-            <Paper key={r.id} sx={{ p: 2, borderRadius: 2 }}>
-              <Typography>
-                <strong>Usuario:</strong> {r.usuario}
-              </Typography>
-              <Typography>
-                <strong>Email:</strong> {r.email}
-              </Typography>
-              <Typography>
-                <strong>Fecha Registro:</strong> {r.fecha_registro}
-              </Typography>
-              <Typography>
-                <strong>Saldo:</strong> {r.saldo}
-              </Typography>
-              <Box mt={1} display="flex" gap={1}>
-                {can(role, "edit", "cliente") && (
-                  <Button size="small" onClick={() => onEdit(r.__clientObj)} disabled={loading}>
-                    Editar
-                  </Button>
-                )}
-                {can(role, "delete", "cliente") && (
-                  <Button
-                    size="small"
-                    color="error"
-                    onClick={() => handleDelete(r.__clientObj.id_cliente)} disabled={loading}
-                  >
-                    Eliminar
-                  </Button>
-                )}
-                <Button
-                  size="small"
-                  color="primary"
-                  onClick={() => handleManageClick(r.__clientObj)} disabled={loading}
-                >
-                  Gestionar
-                </Button>
-              </Box>
-            </Paper>
-          ))}
-          {rows.length === 0 && (
-            <Typography color="textSecondary">No hay clientes disponibles</Typography>
+          {can(role, "create", "cliente") && (
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={handleCreateCliente}
+              size="large"
+            >
+              Crear Cliente
+            </Button>
           )}
-        </Stack>
-      )}
+        </Box>
 
-      {/* Client management dialog */}
-      {selectedClient && (
-        <Cliente2FormDialog
-          open={openDialog}
-          setOpen={setOpenDialog}
-          clientList={clientes}
-          selectedClient={selectedClient}
+        {/* Estadísticas rápidas */}
+        <Box display="flex" gap={2} mb={3}>
+          <Paper sx={{ p: 2, flex: 1 }} elevation={1}>
+            <Typography variant="h6" color="primary" fontWeight="bold">
+              {clientes.length}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Total Clientes
+            </Typography>
+          </Paper>
+          <Paper sx={{ p: 2, flex: 1 }} elevation={1}>
+            <Typography variant="h6" color="success.main" fontWeight="bold">
+              {clientes.filter(c => c.saldo >= 0).length}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Saldo Positivo
+            </Typography>
+          </Paper>
+          <Paper sx={{ p: 2, flex: 1 }} elevation={1}>
+            <Typography variant="h6" color="warning.main" fontWeight="bold">
+              {clientes.filter(c => c.saldo < 0).length}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Saldo Negativo
+            </Typography>
+          </Paper>
+        </Box>
+
+        {/* Tabla de clientes */}
+        <ClientesTable
+          clientes={clientes}
+          onEdit={handleEditCliente}
+          onDelete={handleDeleteCliente}
+          proveedores={proveedores}
         />
-      )}
-    </Box>
+
+        {/* Diálogo de formulario */}
+        <ClienteFormDialog
+          open={openDialog}
+          onClose={() => setOpenDialog(false)}
+          onSave={handleSaveCliente}
+          cliente={currentCliente}
+          usuarios={usuarios}
+          setUsuarios={setUsuarios}
+          editing={editing}
+        />
+
+        {/* Snackbar para notificaciones */}
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={6000}
+          onClose={handleCloseSnackbar}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        >
+          <Alert 
+            onClose={handleCloseSnackbar} 
+            severity={snackbar.severity}
+            sx={{ width: '100%' }}
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
+      </Paper>
+    </Container>
   );
 };
 
